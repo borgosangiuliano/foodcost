@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodCost 360 — DEMO</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0A0D0A; --dark:#111511; --card:#181D18; --border:#272E27;
+  --text:#E8EDE8; --muted:#6B7A6B; --gold:#7EC850; --amber:#4A9E2A;
+  --green:#4CAF7D; --red:#E05252; --orange:#E89520; --radius:10px;
+  --bar-gold:#D4A847; --bar-amber:#E8761A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* DEMO BANNER */
+.demo-banner{background:linear-gradient(135deg,#E8C547,#C9A82C);color:#0A0D0A;text-align:center;padding:8px 16px;font-size:13px;font-weight:700;letter-spacing:.5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:12px}
+.demo-banner a{color:#0A0D0A;font-weight:700;text-decoration:underline}
+
+/* TOP TAB BAR */
+.section-tabs{display:flex;background:var(--dark);border-bottom:1px solid var(--border);flex-shrink:0}
+.section-tab{flex:1;padding:14px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;transition:.2s;background:none;border-top:none;border-left:none;border-right:none}
+.section-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.section-tab.bar-tab.active{color:var(--bar-gold);border-bottom-color:var(--bar-gold)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.page{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--dark);flex-shrink:0;gap:8px;flex-wrap:wrap}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.5px;color:var(--text)}
+.btn{padding:8px 16px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;transition:.15s}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--amber));color:#0A0D0A}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-bar{background:linear-gradient(135deg,var(--bar-gold),var(--bar-amber));color:#0A0D0A}
+.btn-bar:hover{filter:brightness(1.1)}
+.content{flex:1;overflow-y:auto;padding:20px;padding-bottom:20px}
+
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.cocktail-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden;transition:.2s}
+.cocktail-card.locked{opacity:.85;cursor:default}
+.cocktail-card.unlocked{cursor:pointer}
+.cocktail-card.unlocked:hover{border-color:rgba(126,200,80,.3);transform:translateY(-1px)}
+.cocktail-card.bar-card.unlocked:hover{border-color:rgba(212,168,71,.3)}
+.card-top-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--amber))}
+.bar-card .card-top-line{background:linear-gradient(90deg,var(--bar-gold),var(--bar-amber))}
+.card-lock{position:absolute;top:10px;right:10px;font-size:16px;opacity:.5}
+.card-emoji{font-size:26px;margin-bottom:10px}
+.card-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.5px;margin-bottom:4px}
+.card-ing{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;min-height:28px}
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
+.cost-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.cost-value{font-size:18px;font-weight:600;color:var(--gold)}
+.bar-card .cost-value{color:var(--bar-gold)}
+.fc-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.fc-green{background:rgba(76,175,125,.12);color:var(--green)}
+.fc-orange{background:rgba(232,149,32,.12);color:var(--orange)}
+.fc-red{background:rgba(224,82,82,.12);color:var(--red)}
+
+/* ADD CARD */
+.add-card{background:var(--card);border:2px dashed var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;gap:10px;color:var(--muted)}
+.add-card:hover{border-color:var(--gold);color:var(--gold)}
+.bar-add-card:hover{border-color:var(--bar-gold);color:var(--bar-gold)}
+.add-card-icon{font-size:32px}
+.add-card-label{font-size:13px;font-weight:600}
+.add-card-sub{font-size:11px;text-align:center;line-height:1.5}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);line-height:1}
+.bar-stat .stat-val{color:var(--bar-gold)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.overlay.hidden{display:none}
+.modal{background:var(--dark);border:1px solid var(--border);border-radius:14px;width:100%;max-width:540px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold)}
+.modal-title.bar-title{color:var(--bar-gold)}
+.modal-body{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px}
+.btn-icon{background:none;border:1px solid var(--border);border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:.15s}
+.btn-icon:hover{color:var(--text);border-color:var(--muted)}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:.15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:rgba(126,200,80,.4)}
+.form-group textarea{resize:vertical;min-height:60px}
+
+/* ING ROW */
+.ing-section-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.ing-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.ing-row{display:grid;grid-template-columns:1fr 70px 50px 28px;gap:6px;align-items:center}
+.ing-row select,.ing-row input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none}
+.unit-label{font-size:11px;color:var(--muted);text-align:center}
+.btn-add-ing{background:rgba(126,200,80,.07);border:1px dashed rgba(126,200,80,.25);border-radius:7px;color:var(--gold);padding:7px;width:100%;cursor:pointer;font-size:12px;font-weight:600;transition:.15s}
+.btn-add-ing:hover{background:rgba(126,200,80,.12)}
+
+/* COST PREVIEW */
+.cost-preview{background:rgba(126,200,80,.06);border:1px solid rgba(126,200,80,.15);border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.bar-cost-preview{background:rgba(212,168,71,.06);border-color:rgba(212,168,71,.15)}
+.preview-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.preview-cost{font-size:20px;font-weight:700;color:var(--gold)}
+.bar-cost-preview .preview-cost{color:var(--bar-gold)}
+.preview-fc{font-size:14px;font-weight:600;color:var(--muted)}
+.sug-box{background:rgba(76,175,125,.07);border:1px solid rgba(76,175,125,.18);border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}
+.sug-val{font-size:20px;font-weight:700;color:var(--green)}
+
+/* VIEW MODAL */
+.view-ing-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(39,46,39,.5)}
+.view-ing-row:last-child{border-bottom:none}
+.view-ing-name{font-size:13px;font-weight:500}
+.view-ing-qty{font-size:11px;color:var(--muted)}
+.view-ing-cost{font-size:13px;font-weight:600;color:var(--gold)}
+.bar-view .view-ing-cost{color:var(--bar-gold)}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0}
+.total-label{font-size:12px;color:var(--muted)}
+.total-cost{font-size:20px;font-weight:700;color:var(--gold)}
+.bar-view .total-cost{color:var(--bar-gold)}
+.divider{border:none;border-top:1px solid var(--border);margin:8px 0}
+.fc-detail{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.fc-pill{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600}
+
+/* UPGRADE MODAL */
+.upgrade-modal{background:var(--dark);border:2px solid var(--gold);border-radius:14px;width:100%;max-width:420px;padding:36px;text-align:center}
+.upgrade-emoji{font-size:56px;margin-bottom:16px}
+.upgrade-title{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--gold);margin-bottom:10px}
+.upgrade-text{color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:24px}
+.upgrade-price{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--text);margin-bottom:4px}
+.upgrade-price span{font-size:24px;color:var(--muted)}
+.upgrade-note{font-size:12px;color:var(--muted);margin-bottom:24px}
+.upgrade-btn{display:inline-block;background:linear-gradient(135deg,#E8C547,#C9A82C);color:#0A0D0A;font-weight:700;font-size:16px;padding:14px 32px;border-radius:10px;text-decoration:none;transition:filter .2s}
+.upgrade-btn:hover{filter:brightness(1.1)}
+.upgrade-close{display:block;margin-top:16px;font-size:13px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif}
+.upgrade-close:hover{color:var(--text)}
+
+/* LOCKED BADGE */
+.locked-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;background:rgba(232,197,71,.1);color:#E8C547;border:1px solid rgba(232,197,71,.25);padding:2px 8px;border-radius:20px;font-weight:600;margin-left:8px}
+
+@media(max-width:600px){
+  .form-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .ing-row{grid-template-columns:1fr 60px 40px 28px}
+}
+
+@media(max-width:480px){
+  .topbar{padding:8px 12px}
+  .topbar-title{font-size:16px}
+  .btn{padding:6px 10px;font-size:12px}
+  .demo-banner{font-size:11px;padding:6px 10px;flex-wrap:wrap;gap:4px}
+}
+
+.analisi-card{background:var(--dark);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px}
+.analisi-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.analisi-body{flex:1;min-width:0}
+.analisi-nome{font-weight:700;font-size:14px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.analisi-sub{font-size:11px;color:var(--muted)}
+.analisi-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+.analisi-fc{font-size:13px;font-weight:700;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- DEMO BANNER -->
+<div class="demo-banner">
+  🎁 VERSIONE DEMO — <a href="../shop.html" target="_blank">Acquista la versione completa da €49</a>
+</div>
+
+<!-- SECTION TABS -->
+<div class="section-tabs">
+  <button class="section-tab active" id="tab-cucina" onclick="switchSection('cucina')">🍳 Cucina</button>
+  <button class="section-tab bar-tab" id="tab-bar" onclick="switchSection('bar')">🍸 Bar</button>
+  <button class="section-tab" id="tab-analisi" onclick="switchSection('analisi')" style="color:#E8C547">📊 Analisi</button>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════════════
+       SEZIONE CUCINA
+  ══════════════════════════════════════════ -->
+  <div id="section-cucina" class="page">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Ricette Cucina</div>
+      </div>
+      <button class="btn btn-primary" onclick="nuovaRicettaCucina()">+ Nuova Ricetta</button>
+      <button class="btn btn-ghost" onclick="apriQRDemo()" style="font-size:12px">📱 QR Menù</button>
+    </div>
+    <div class="content">
+      <div class="stats-row" id="stats-cucina"></div>
+      <div class="cards-grid" id="grid-cucina"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SEZIONE BAR
+  ══════════════════════════════════════════ -->
+  <div id="section-bar" class="page" style="display:none">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" style="color:var(--bar-gold)">Cocktail & Drink</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-bar" onclick="nuovaCocktailBar()">+ Nuovo</button>
+        <button class="btn btn-ghost" onclick="apriQRDemoBar()" style="font-size:12px">📱 QR Menù</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="stats-row" id="stats-bar"></div>
+      <div class="cards-grid" id="grid-bar"></div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       SEZIONE ANALISI MENU
+  ══════════════════════════════════════════ -->
+  <div id="section-analisi" class="page" style="display:none">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" style="color:#E8C547">Analisi Menu</div>
+      </div>
+      <span style="font-size:11px;color:var(--muted);background:rgba(232,197,71,.1);border:1px solid rgba(232,197,71,.2);padding:2px 10px;border-radius:10px">DEMO</span>
+    </div>
+    <div class="content">
+      <div style="background:rgba(232,197,71,.06);border:1px solid rgba(232,197,71,.15);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#E8C547">
+        💡 Demo limitata — nella versione completa puoi analizzare ricette e cocktail illimitati con dati di vendita reali.
+      </div>
+      <div id="analisi-grid" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ══════════════════ MODALI CUCINA ══════════════════ -->
+
+<!-- VIEW RICETTA -->
+<div class="overlay hidden" id="modal-view-cucina">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="vc-nome"></div>
+        <div style="font-size:11px;color:var(--muted)" id="vc-cat"></div>
+      </div>
+      <button class="btn-icon" onclick="closeModal('modal-view-cucina')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="vc-note" style="font-size:13px;color:var(--muted);font-style:italic"></div>
+      <div id="vc-porzioni-info" style="font-size:12px;color:var(--muted);padding:6px 10px;background:rgba(126,200,80,.05);border-radius:6px;border:1px solid rgba(126,200,80,.1)"></div>
+      <div class="ing-section-title">Ingredienti</div>
+      <div id="vc-ing-list"></div>
+      <hr class="divider">
+      <div class="total-row">
+        <div class="total-label">Costo totale ricetta</div>
+        <div class="total-cost" id="vc-total"></div>
+      </div>
+      <div style="padding:8px 12px;background:rgba(126,200,80,.04);border:1px solid rgba(126,200,80,.1);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:var(--muted)">Costo per piatto</span>
+        <span style="font-size:18px;font-weight:700;color:var(--gold)" id="vc-costo-piatto"></span>
+      </div>
+      <div class="fc-detail" id="vc-fc-detail"></div>
+      <div class="sug-box" id="vc-sug-box"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-view-cucina')">Chiudi</button>
+      <button class="btn btn-primary" onclick="openEditDemoRicetta(currentViewCucinaId)" style="font-size:13px">✏️ Modifica prezzo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFICA PREZZO RICETTA DEMO -->
+<div class="overlay hidden" id="modal-edit-demo">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Modifica ricetta</div>
+      <button class="btn-icon" onclick="closeModal('modal-edit-demo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ed-id">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;background:rgba(232,197,71,.08);border:1px solid rgba(232,197,71,.2);border-radius:7px;padding:8px 12px;color:#E8C547">
+        💡 Nella demo puoi modificare prezzo e porzioni. Gli ingredienti sono modificabili nella versione completa.
+      </p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Prezzo di vendita (€)</label>
+          <input type="number" id="ed-prezzo" placeholder="es. 14.00" step="0.50" min="0">
+        </div>
+        <div class="form-group">
+          <label>Numero porzioni</label>
+          <input type="number" id="ed-porzioni" value="4" min="1" step="1">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-edit-demo')">Annulla</button>
+      <button class="btn btn-primary" onclick="salvaEditDemo()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORM NUOVA RICETTA CUCINA -->
+<div class="overlay hidden" id="modal-form-cucina">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ La Tua Ricetta</div>
+      <button class="btn-icon" onclick="closeModal('modal-form-cucina')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(232,197,71,.08);border:1px solid rgba(232,197,71,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#E8C547;margin-bottom:4px">
+        🎁 Demo — puoi aggiungere <strong>1 ricetta</strong>. Nella versione completa sono illimitate.
+      </div>
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label>Nome ricetta</label>
+          <input type="text" id="fc-nome" placeholder="es. Tagliatelle al ragù">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="fc-cat">
+            <option>Antipasti</option><option>Primi</option><option>Secondi - Carne</option>
+            <option>Secondi - Pesce</option><option>Contorni</option><option>Dolci</option><option>Altro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prezzo di vendita (€)</label>
+          <input type="number" id="fc-prezzo" placeholder="es. 14.00" step="0.10" min="0" oninput="updateCucinaPreview()">
+        </div>
+        <div class="form-group">
+          <label>Numero porzioni</label>
+          <input type="number" id="fc-porzioni" value="4" min="1" step="1" oninput="updateCucinaPreview()">
+        </div>
+        <div class="form-group form-full">
+          <label>Note</label>
+          <textarea id="fc-note" placeholder="es. Cottura lenta, 4 ore..."></textarea>
+        </div>
+      </div>
+      <div class="ing-section-title" style="margin-top:4px">Ingredienti</div>
+      <div class="ing-list" id="ing-list-cucina"></div>
+      <button class="btn-add-ing" onclick="addIngCucinaRow()">+ Aggiungi ingrediente</button>
+      <div class="cost-preview" style="margin-top:12px">
+        <div>
+          <div class="preview-label">Costo per piatto</div>
+          <div class="preview-cost" id="pc-costo">€ 0.00</div>
+        </div>
+        <div style="text-align:center">
+          <div class="preview-label">Food Cost %</div>
+          <div class="preview-fc" id="pc-fc">—</div>
+        </div>
+      </div>
+      <div class="sug-box">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--muted)">Target FC %</span>
+          <input type="number" id="pc-target" value="30" min="1" max="100" step="1" oninput="updateCucinaPreview()" style="width:55px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:13px;font-weight:600;outline:none;text-align:center">
+          <span style="font-size:12px;color:var(--muted)">%</span>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">💡 Prezzo suggerito</div>
+          <div class="sug-val" id="pc-sug">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-form-cucina')">Annulla</button>
+      <button class="btn btn-primary" onclick="salvaRicettaCucina()">Salva Ricetta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ MODALI BAR ══════════════════ -->
+
+<!-- VIEW COCKTAIL -->
+<div class="overlay hidden" id="modal-view-bar">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title bar-title" id="vb-nome"></div>
+        <div style="font-size:11px;color:var(--muted)" id="vb-cat"></div>
+      </div>
+      <button class="btn-icon" onclick="closeModal('modal-view-bar')">✕</button>
+    </div>
+    <div class="modal-body bar-view">
+      <div id="vb-note" style="font-size:13px;color:var(--muted);font-style:italic"></div>
+      <div class="ing-section-title">Ingredienti</div>
+      <div id="vb-ing-list"></div>
+      <hr class="divider">
+      <div class="total-row">
+        <div class="total-label">Costo totale drink</div>
+        <div class="total-cost" id="vb-total"></div>
+      </div>
+      <div class="fc-detail" id="vb-fc-detail"></div>
+      <div class="sug-box" id="vb-sug-box"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-view-bar')">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORM NUOVO COCKTAIL -->
+<div class="overlay hidden" id="modal-form-bar">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title bar-title">🍸 Il Tuo Cocktail</div>
+      <button class="btn-icon" onclick="closeModal('modal-form-bar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(232,197,71,.08);border:1px solid rgba(232,197,71,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#E8C547;margin-bottom:4px">
+        🎁 Demo — puoi aggiungere <strong>1 cocktail</strong>. Nella versione completa sono illimitati.
+      </div>
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label>Nome cocktail</label>
+          <input type="text" id="fb-nome" placeholder="es. Spritz della Casa">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="fb-cat">
+            <option>Classici IBA</option><option>Aperitivi</option><option>Long Drink</option>
+            <option>Shot</option><option>Analcolici</option><option>Signature</option><option>Altro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prezzo di vendita (€)</label>
+          <input type="number" id="fb-prezzo" placeholder="es. 9.00" step="0.10" min="0" oninput="updateBarPreview()">
+        </div>
+        <div class="form-group form-full">
+          <label>Note / metodo</label>
+          <textarea id="fb-note" placeholder="es. Shakerato, servire in coppa fredda..."></textarea>
+        </div>
+      </div>
+      <div class="ing-section-title" style="margin-top:4px">Ingredienti</div>
+      <div class="ing-list" id="ing-list-bar"></div>
+      <button class="btn-add-ing" onclick="addIngBarRow()" style="border-color:rgba(212,168,71,.25);color:var(--bar-gold);background:rgba(212,168,71,.07)">+ Aggiungi ingrediente</button>
+      <div class="cost-preview bar-cost-preview" style="margin-top:12px">
+        <div>
+          <div class="preview-label">Costo drink</div>
+          <div class="preview-cost" id="pb-costo">€ 0.00</div>
+        </div>
+        <div style="text-align:right">
+          <div class="preview-label">Beverage Cost %</div>
+          <div class="preview-fc" id="pb-fc">—</div>
+        </div>
+      </div>
+      <div class="sug-box">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--muted)">Target BC %</span>
+          <input type="number" id="pb-target" value="25" min="1" max="100" step="1" oninput="updateBarPreview()" style="width:55px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:13px;font-weight:600;outline:none;text-align:center">
+          <span style="font-size:12px;color:var(--muted)">%</span>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">💡 Prezzo suggerito</div>
+          <div class="sug-val" id="pb-sug" style="color:var(--green)">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-form-bar')">Annulla</button>
+      <button class="btn btn-bar" onclick="salvaCocktailBar()">Salva Cocktail</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div class="overlay hidden" id="modal-upgrade">
+  <div class="upgrade-modal">
+    <div class="upgrade-emoji">🔒</div>
+    <div class="upgrade-title">Hai finito i crediti demo!</div>
+    <p class="upgrade-text">
+      Nella versione completa puoi aggiungere <strong>ricette e cocktail illimitati</strong>, gestire ingredienti, aggiornare i prezzi e molto altro.<br><br>
+      Acquista ora e ricevi il file completo entro poche ore.
+    </p>
+    <div class="upgrade-price"><span>da</span> €49</div>
+    <div class="upgrade-note">pagamento unico · nessun abbonamento</div>
+    <a href="../shop.html" target="_blank" class="upgrade-btn">🚀 Acquista la versione completa</a>
+    <button class="upgrade-close" onclick="closeModal('modal-upgrade')">Continua con la demo →</button>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   DATI DEMO — CUCINA
+================================================================ */
+var ING_CUCINA = [
+  {id:'ic1',nome:'Spaghetti',unit:'kg',prezzo:1.80,qty:1},
+  {id:'ic2',nome:'Pancetta affumicata',unit:'kg',prezzo:10,qty:1},
+  {id:'ic3',nome:'Uova',unit:'pz',prezzo:0.20,qty:1},
+  {id:'ic4',nome:'Pecorino Romano',unit:'kg',prezzo:11,qty:1},
+  {id:'ic5',nome:'Pepe nero',unit:'kg',prezzo:12,qty:1},
+  {id:'ic6',nome:'Petto di pollo',unit:'kg',prezzo:6.50,qty:1},
+  {id:'ic7',nome:'Limone',unit:'pz',prezzo:0.30,qty:1},
+  {id:'ic8',nome:'Rosmarino fresco',unit:'pz',prezzo:0.30,qty:1},
+  {id:'ic9',nome:'Olio EVO',unit:'lt',prezzo:8.00,qty:1},
+  {id:'ic10',nome:'Sale fino',unit:'kg',prezzo:0.50,qty:1},
+  {id:'ic11',nome:'Aglio',unit:'kg',prezzo:4.00,qty:1},
+  {id:'ic12',nome:'Pomodori pelati',unit:'kg',prezzo:1.80,qty:1},
+  {id:'ic13',nome:'Basilico fresco',unit:'pz',prezzo:0.40,qty:1},
+  {id:'ic14',nome:'Burro',unit:'kg',prezzo:8,qty:1},
+  {id:'ic15',nome:'Parmigiano Reggiano',unit:'kg',prezzo:14,qty:1},
+  {id:'ic16',nome:'Funghi porcini secchi',unit:'kg',prezzo:35,qty:1},
+  {id:'ic17',nome:'Riso Arborio',unit:'kg',prezzo:2.20,qty:1},
+  {id:'ic18',nome:'Brodo vegetale',unit:'lt',prezzo:0.80,qty:1},
+  {id:'ic19',nome:'Vino bianco',unit:'lt',prezzo:4.00,qty:1},
+  {id:'ic10',nome:'Branzino intero',unit:'kg',prezzo:18,qty:1},
+  {id:'ic11',nome:'Pomodorini',unit:'pz',prezzo:0.15,qty:1},
+  {id:'ic12',nome:'Olive nere',unit:'pz',prezzo:0.30,qty:1}
+];
+
+var RICETTE_DEMO = [
+  {
+    id:'rd1', nome:'Pasta alla Carbonara', cat:'Primi', prezzo:14, porzioni:4,
+    note:'Mantecata fuori fuoco. No panna. Usa solo guanciale o pancetta.',
+    locked:true,
+    ingredienti:[
+      {id:'ic1',qty:0.4,unit:'kg'},{id:'ic2',qty:0.15,unit:'kg'},
+      {id:'ic3',qty:4,unit:'pz'},{id:'ic4',qty:0.1,unit:'kg'},{id:'ic5',qty:0.005,unit:'kg'}
+    ]
+  },
+  {
+    id:'rd2', nome:'Petto di Pollo alla Griglia', cat:'Secondi - Carne', prezzo:15, porzioni:4,
+    note:'Marinato con limone e rosmarino. Griglia ad alta temperatura.',
+    locked:true,
+    ingredienti:[
+      {id:'ic6',qty:0.8,unit:'kg'},{id:'ic7',qty:2,unit:'pz'},
+      {id:'ic8',qty:2,unit:'pz'},{id:'ic9',qty:0.03,unit:'lt'}
+    ]
+  },
+  {
+    id:'rd3', nome:'Branzino al Forno', cat:'Secondi - Pesce', prezzo:18, porzioni:2,
+    note:'Branzino intero. Alto scarto (testa, lische, pelle). Costo reale molto elevato.',
+    locked:true,
+    ingredienti:[
+      {id:'ic10',qty:1.2,unit:'kg'},{id:'ic11',qty:3,unit:'pz'},
+      {id:'ic12',qty:2,unit:'pz'},{id:'ic9',qty:0.04,unit:'lt'}
+    ]
+  }
+];
+
+/* ================================================================
+   DATI DEMO — BAR
+================================================================ */
+var ING_BAR = [
+  {id:'ib1',nome:'Gin (London Dry)',unit:'cl',prezzo:16,qty:70},
+  {id:'ib2',nome:'Vodka',unit:'cl',prezzo:13,qty:70},
+  {id:'ib3',nome:'Rum Bianco',unit:'cl',prezzo:13,qty:70},
+  {id:'ib4',nome:'Campari',unit:'cl',prezzo:14,qty:100},
+  {id:'ib5',nome:'Vermouth Rosso',unit:'cl',prezzo:8,qty:100},
+  {id:'ib6',nome:'Aperol',unit:'cl',prezzo:10,qty:100},
+  {id:'ib7',nome:'Prosecco',unit:'cl',prezzo:5,qty:75},
+  {id:'ib8',nome:'Succo di Limone',unit:'cl',prezzo:2,qty:100},
+  {id:'ib9',nome:'Succo di Lime',unit:'cl',prezzo:2.5,qty:100},
+  {id:'ib10',nome:'Sciroppo di Zucchero',unit:'cl',prezzo:3,qty:100},
+  {id:'ib11',nome:'Menta (foglie)',unit:'pz',prezzo:0.8,qty:20},
+  {id:'ib12',nome:'Soda Water',unit:'cl',prezzo:0.5,qty:100},
+  {id:'ib13',nome:'Triple Sec',unit:'cl',prezzo:16,qty:70},
+  {id:'ib14',nome:'Tequila',unit:'cl',prezzo:15,qty:70},
+  {id:'ib15',nome:'Bourbon Whiskey',unit:'cl',prezzo:18,qty:70},
+  {id:'ib16',nome:'Granatina',unit:'cl',prezzo:4,qty:70},
+  {id:'ib17',nome:'Succo di Arancia',unit:'cl',prezzo:1.8,qty:100},
+  {id:'ib18',nome:'Coca-Cola',unit:'cl',prezzo:2,qty:33},
+  {id:'ib19',nome:'Acqua Tonica',unit:'cl',prezzo:1.8,qty:20},
+  {id:'ib20',nome:'Oliva (garnish)',unit:'pz',prezzo:1.2,qty:10}
+];
+
+
+var COCKTAIL_DEMO = [
+  {
+    id:'bd1', nome:'Negroni', cat:'Classici IBA', prezzo:9,
+    note:'Stirrato. Rocks glass con ghiaccio grosso. Scorza d\'arancia.',
+    locked:true,
+    ingredienti:[{id:'ib1',qty:3},{id:'ib4',qty:3},{id:'ib5',qty:3},{id:'ib20',qty:1}]
+  },
+  {
+    id:'bd2', nome:'Spritz Aperol', cat:'Aperitivi', prezzo:7,
+    note:'3-2-1. Calice con ghiaccio. Scorza d\'arancia e oliva.',
+    locked:true,
+    ingredienti:[{id:'ib6',qty:6},{id:'ib7',qty:9},{id:'ib12',qty:3},{id:'ib20',qty:1}]
+  },
+  {
+    id:'bd3', nome:'Long Island Iced Tea', cat:'Long Drink', prezzo:10,
+    note:'5 distillati. Costo altissimo rispetto al prezzo di vendita — stai quasi regalandolo.',
+    locked:true,
+    ingredienti:[{id:'ib2',qty:4},{id:'ib3',qty:4},{id:'ib14',qty:4},{id:'ib13',qty:4},{id:'ib1',qty:4},{id:'ib8',qty:3},{id:'ib18',qty:6}]
+  }
+];
+
+/* ================================================================
+   STATE
+================================================================ */
+var ricetteCucina = JSON.parse(JSON.stringify(RICETTE_DEMO));
+var cocktailBar   = JSON.parse(JSON.stringify(COCKTAIL_DEMO));
+var cucinaPersonali = 0; // quante ne ha aggiunte l'utente
+var barPersonali    = 0;
+var MAX_PERSONALI   = 1;
+
+/* ================================================================
+   UTILS
+================================================================ */
+function fmt(v){ return '€ '+parseFloat(v||0).toFixed(2); }
+function uid(){ return 'u'+Math.random().toString(36).slice(2,9); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+
+function costoIngCucina(ingId, qty){
+  var ing = ING_CUCINA.find(function(i){return i.id===ingId;});
+  if(!ing||!qty)return 0;
+  return (ing.prezzo/ing.qty)*qty;
+}
+function costoCucina(r){
+  return (r.ingredienti||[]).reduce(function(s,ri){return s+costoIngCucina(ri.id,ri.qty);},0);
+}
+function costoIngBar(ingId, qty){
+  var ing = ING_BAR.find(function(i){return i.id===ingId;});
+  if(!ing||!qty)return 0;
+  return (ing.prezzo/ing.qty)*qty;
+}
+function costoBar(c){
+  return (c.ingredienti||[]).reduce(function(s,ri){return s+costoIngBar(ri.id,ri.qty);},0);
+}
+function fcBadgeClass(fc){
+  if(fc<=28)return 'fc-green'; if(fc<=38)return 'fc-orange'; return 'fc-red';
+}
+function bcBadgeClass(fc){
+  if(fc<=25)return 'fc-green'; if(fc<=35)return 'fc-orange'; return 'fc-red';
+}
+
+/* ================================================================
+   SECTION SWITCH
+================================================================ */
+function switchSection(s){
+  document.getElementById('section-cucina').style.display = s==='cucina'?'flex':'none';
+  document.getElementById('section-bar').style.display    = s==='bar'?'flex':'none';
+  document.getElementById('section-analisi').style.display = s==='analisi'?'flex':'none';
+  document.getElementById('tab-cucina').classList.toggle('active', s==='cucina');
+  document.getElementById('tab-bar').classList.toggle('active', s==='bar');
+  document.getElementById('tab-analisi').classList.toggle('active', s==='analisi');
+  if(s==='analisi') renderAnalisi();
+}
+
+/* ================================================================
+   ANALISI MENU DEMO
+================================================================ */
+function categoriaMenu(fc, venduto){
+  // venduto è simulato: 1=poco, 2=medio, 3=tanto
+  if(fc<=30 && venduto>=2) return {label:'Eccellente',color:'#3EC97A',bg:'rgba(62,201,122,.12)',border:'rgba(62,201,122,.3)',desc:'Margine ottimo, piatto venduto. Tienilo sempre in carta.'};
+  if(fc<=35 && venduto>=2) return {label:'Affidabile',color:'#3399FF',bg:'rgba(51,153,255,.12)',border:'rgba(51,153,255,.3)',desc:'Tanto venduto ma margine basso. Ottimizza gli ingredienti.'};
+  if(fc<=30 && venduto<2)  return {label:'Potenziale',color:'#E89520',bg:'rgba(232,149,32,.12)',border:'rgba(232,149,32,.3)',desc:'Buon margine ma poco ordinato. Valorizzalo nel menu.'};
+  return {label:'Critico',color:'#E05252',bg:'rgba(224,82,82,.12)',border:'rgba(224,82,82,.3)',desc:'Margine basso e poco venduto. Valuta se tenerlo in carta.'};
+}
+
+function renderAnalisi(){
+  var grid = document.getElementById('analisi-grid');
+  if(!grid) return;
+
+  // Simula vendite per la demo
+  var vendutoCucina = {rd1:3, rd2:2, rd3:1}; // carbonara=tanto, pollo=medio, branzino=poco
+  var vendutoBar    = {bd1:3, bd2:3, bd3:1};  // negroni=tanto, spritz=tanto, long island=poco
+
+  var items = [];
+
+  // Cucina
+  ricetteCucina.forEach(function(r){
+    var ctot = costoCucina(r);
+    var cp = ctot / (parseInt(r.porzioni)||1);
+    var fc = r.prezzo>0 ? (cp/r.prezzo)*100 : null;
+    if(fc===null) return;
+    var vend = vendutoCucina[r.id] || 1;
+    var cat = categoriaMenu(fc, vend);
+    items.push({nome:r.nome, tipo:'🍳', fc:fc, cat:cat, prezzo:r.prezzo, cp:cp});
+  });
+
+  // Bar
+  cocktailBar.forEach(function(c){
+    var ctot = costoBar(c);
+    var fc = c.prezzo>0 ? (ctot/c.prezzo)*100 : null;
+    if(fc===null) return;
+    var vend = vendutoBar[c.id] || 1;
+    var cat = categoriaMenu(fc, vend);
+    items.push({nome:c.nome, tipo:'🍸', fc:fc, cat:cat, prezzo:c.prezzo, cp:ctot});
+  });
+
+  // Ordina per categoria: Critico prima, poi Potenziale, Affidabile, Eccellente
+  var ordine = {Critico:0, Potenziale:1, Affidabile:2, Eccellente:3};
+  items.sort(function(a,b){ return ordine[a.cat.label] - ordine[b.cat.label]; });
+
+  // Conta per categoria
+  var contatori = {Eccellente:0, Affidabile:0, Potenziale:0, Critico:0};
+  items.forEach(function(i){ contatori[i.cat.label]++; });
+
+  // Header riepilogo
+  var header = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:16px">';
+  [{l:'Eccellente',c:'#3EC97A',e:'🟢'},{l:'Affidabile',c:'#3399FF',e:'🔵'},{l:'Potenziale',c:'#E89520',e:'🟡'},{l:'Critico',c:'#E05252',e:'🔴'}].forEach(function(x){
+    header += '<div style="background:var(--dark);border:1px solid rgba('+hex2rgb(x.c)+',.2);border-radius:10px;padding:10px;text-align:center">'+
+      '<div style="font-size:18px">'+x.e+'</div>'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;color:'+x.c+'">'+contatori[x.l]+'</div>'+
+      '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">'+x.l+'</div>'+
+    '</div>';
+  });
+  header += '</div>';
+
+  // Cards
+  var cards = items.map(function(i){
+    return '<div class="analisi-card" style="border-color:'+i.cat.border+';background:'+i.cat.bg+'">'+
+      '<div class="analisi-dot" style="background:'+i.cat.color+'"></div>'+
+      '<div class="analisi-body">'+
+        '<div class="analisi-nome">'+i.tipo+' '+i.nome+'</div>'+
+        '<div class="analisi-sub">'+i.cat.desc+'</div>'+
+      '</div>'+
+      '<div style="text-align:right;flex-shrink:0">'+
+        '<div class="analisi-badge" style="background:'+i.cat.bg+';color:'+i.cat.color+';border:1px solid '+i.cat.border+'">'+i.cat.label+'</div>'+
+        '<div class="analisi-fc" style="color:'+i.cat.color+';margin-top:4px">FC '+i.fc.toFixed(1)+'%</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  // Box upgrade
+  var upgrade = '<div style="margin-top:16px;background:rgba(232,197,71,.06);border:1px solid rgba(232,197,71,.15);border-radius:12px;padding:16px;text-align:center">'+
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:10px">Nella versione completa puoi inserire le vendite reali e analizzare il menu completo del tuo ristorante.</div>'+
+    '<a href="../shop.html" style="background:linear-gradient(135deg,#E8C547,#C9A82C);color:#0A0D0A;text-decoration:none;font-weight:700;font-size:13px;padding:10px 24px;border-radius:8px;display:inline-block">Acquista ora →</a>'+
+  '</div>';
+
+  grid.innerHTML = header + cards + upgrade;
+}
+
+function hex2rgb(hex){
+  var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return r+','+g+','+b;
+}
+
+/* ================================================================
+   RENDER CUCINA
+================================================================ */
+function renderCucina(){
+  var grid = document.getElementById('grid-cucina');
+  var cards = ricetteCucina.map(function(r){
+    var ctot = costoCucina(r);
+    var cp   = ctot / (parseInt(r.porzioni)||1);
+    var fc   = r.prezzo>0 ? (cp/r.prezzo)*100 : null;
+    var ingNomi = (r.ingredienti||[]).map(function(ri){
+      var ing=ING_CUCINA.find(function(i){return i.id===ri.id;});
+      return ing?ing.nome:'?';
+    }).join(', ');
+    return '<div class="cocktail-card '+(r.locked?'locked':'unlocked')+'" onclick="'+(r.locked?'openViewCucina(\''+r.id+'\')':'openViewCucina(\''+r.id+'\')')+'">' +
+      '<div class="card-top-line"></div>' +
+      (r.locked?'<div class="card-lock">🔒</div>':'') +
+      '<div class="card-emoji">'+(r.cat==='Primi'?'🍝':r.cat==='Secondi - Carne'?'🥩':r.cat==='Secondi - Pesce'?'🐟':r.cat==='Dolci'?'🍮':'🍽️')+'</div>' +
+      '<div class="card-name">'+(r.locked?r.nome+' <span class="locked-badge">🔒 Demo</span>':r.nome)+'</div>' +
+      '<div class="card-ing">'+ingNomi+'</div>' +
+      '<div class="card-footer">' +
+        '<div><div class="cost-label">Costo piatto</div><div class="cost-value">'+fmt(cp)+'</div></div>' +
+        (fc!==null?'<span class="fc-badge '+fcBadgeClass(fc)+'">FC '+fc.toFixed(1)+'%</span>':'<span class="fc-badge" style="color:var(--muted)">No prezzo</span>') +
+      '</div></div>';
+  }).join('');
+
+  // add card
+  var addCard = '<div class="add-card" onclick="nuovaRicettaCucina()">' +
+    '<div class="add-card-icon">➕</div>' +
+    '<div class="add-card-label">Aggiungi la tua ricetta</div>' +
+    '<div class="add-card-sub">'+(cucinaPersonali>=MAX_PERSONALI?'<span style="color:var(--red)">Limite demo raggiunto</span>':'1 slot disponibile nella demo')+'</div>' +
+    '</div>';
+
+  grid.innerHTML = cards + addCard;
+
+  // stats
+  var totCosto = ricetteCucina.reduce(function(s,r){return s+costoCucina(r)/(parseInt(r.porzioni)||1);},0);
+  var avg = ricetteCucina.length ? totCosto/ricetteCucina.length : 0;
+  document.getElementById('stats-cucina').innerHTML =
+    '<div class="stat-card"><div class="stat-val">'+ricetteCucina.length+'</div><div class="stat-lbl">Ricette</div></div>' +
+    '<div class="stat-card"><div class="stat-val">'+fmt(avg)+'</div><div class="stat-lbl">Costo medio</div></div>' +
+    '<div class="stat-card"><div class="stat-val">'+ING_CUCINA.length+'</div><div class="stat-lbl">Ingredienti</div></div>';
+}
+
+/* ================================================================
+   VIEW CUCINA
+================================================================ */
+function openViewCucina(id){
+  currentViewCucinaId=id;
+  var r = ricetteCucina.find(function(x){return x.id===id;});
+  if(!r)return;
+  var ctot = costoCucina(r);
+  var cp   = ctot/(parseInt(r.porzioni)||1);
+  var fc   = r.prezzo>0?(cp/r.prezzo)*100:null;
+  document.getElementById('vc-nome').textContent = r.nome;
+  document.getElementById('vc-cat').textContent  = r.cat;
+  var noteEl = document.getElementById('vc-note');
+  noteEl.textContent = r.note||''; noteEl.style.display = r.note?'block':'none';
+  document.getElementById('vc-porzioni-info').textContent = r.porzioni+' porzioni · costo per piatto calcolato';
+  document.getElementById('vc-ing-list').innerHTML = (r.ingredienti||[]).map(function(ri){
+    var ing=ING_CUCINA.find(function(i){return i.id===ri.id;});
+    if(!ing)return '';
+    var c=costoIngCucina(ri.id,ri.qty);
+    return '<div class="view-ing-row"><div><div class="view-ing-name">'+ing.nome+'</div><div class="view-ing-qty">'+ri.qty+' '+ing.unit+'</div></div><div class="view-ing-cost">'+fmt(c)+'</div></div>';
+  }).join('');
+  document.getElementById('vc-total').textContent = fmt(ctot);
+  document.getElementById('vc-costo-piatto').textContent = fmt(cp);
+  var fcHtml = fc!==null ?
+    '<span class="fc-pill '+fcBadgeClass(fc)+'">FC '+fc.toFixed(1)+'%</span>' +
+    '<span class="fc-pill" style="background:rgba(255,255,255,.05);color:var(--muted)">Prezzo: '+fmt(r.prezzo)+'</span>' +
+    '<span class="fc-pill" style="background:rgba(76,175,125,.08);color:var(--green)">Margine: '+fmt(r.prezzo-cp)+'</span>' :
+    '<span class="fc-pill" style="background:rgba(255,255,255,.05);color:var(--muted)">Nessun prezzo impostato</span>';
+  document.getElementById('vc-fc-detail').innerHTML = fcHtml;
+  var sug = cp>0?cp/0.30:0;
+  document.getElementById('vc-sug-box').innerHTML =
+    '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--muted)">Target FC %</span>' +
+    '<input type="number" value="30" min="1" max="100" step="1" oninput="aggiornaVCSug('+cp+',this.value)" style="width:55px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:13px;font-weight:600;outline:none;text-align:center">' +
+    '<span style="font-size:12px;color:var(--muted)">%</span></div>' +
+    '<div style="text-align:right"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">💡 Prezzo suggerito</div>' +
+    '<div class="sug-val" id="vc-sug-val">'+fmt(sug)+'</div></div>';
+  openModal('modal-view-cucina');
+}
+function aggiornaVCSug(cp,t){
+  var el=document.getElementById('vc-sug-val');
+  if(el)el.textContent=cp>0&&t>0?fmt(cp/(t/100)):'—';
+}
+
+/* ================================================================
+   NUOVA RICETTA CUCINA
+================================================================ */
+function nuovaRicettaCucina(){
+  if(cucinaPersonali>=MAX_PERSONALI){ openModal('modal-upgrade'); return; }
+  document.getElementById('fc-nome').value='';
+  document.getElementById('fc-cat').value='Primi';
+  document.getElementById('fc-prezzo').value='';
+  document.getElementById('fc-porzioni').value='4';
+  document.getElementById('fc-note').value='';
+  document.getElementById('ing-list-cucina').innerHTML='';
+  updateCucinaPreview();
+  openModal('modal-form-cucina');
+}
+
+function addIngCucinaRow(){
+  var list=document.getElementById('ing-list-cucina');
+  var row=document.createElement('div');
+  row.className='ing-row';
+  var opts=ING_CUCINA.map(function(i){return '<option value="'+i.id+'">'+i.nome+'</option>';}).join('');
+  row.innerHTML='<select onchange="updateCucinaPreview()">'+opts+'</select>'+
+    '<input type="number" placeholder="Qtà" step="0.001" min="0" oninput="updateCucinaPreview()">'+
+    '<div class="unit-label">'+ING_CUCINA[0].unit+'</div>'+
+    '<button class="btn-icon" style="color:var(--red)" onclick="this.parentElement.remove();updateCucinaPreview()">×</button>';
+  var sel=row.querySelector('select');
+  sel.addEventListener('change',function(){
+    var ing=ING_CUCINA.find(function(i){return i.id===sel.value;});
+    row.querySelector('.unit-label').textContent=ing?ing.unit:'';
+    updateCucinaPreview();
+  });
+  list.appendChild(row);
+  updateCucinaPreview();
+}
+
+function updateCucinaPreview(){
+  var rows=document.querySelectorAll('#ing-list-cucina .ing-row');
+  var tot=0;
+  rows.forEach(function(row){
+    var sel=row.querySelector('select');
+    var qty=parseFloat(row.querySelector('input[type=number]').value||0);
+    tot+=costoIngCucina(sel.value,qty);
+  });
+  var por=Math.max(1,parseInt(document.getElementById('fc-porzioni').value)||1);
+  var cp=tot/por;
+  document.getElementById('pc-costo').textContent=fmt(cp);
+  var prezzo=parseFloat(document.getElementById('fc-prezzo').value);
+  if(prezzo&&cp){
+    var fc=(cp/prezzo)*100;
+    document.getElementById('pc-fc').textContent='FC '+fc.toFixed(1)+'%';
+    document.getElementById('pc-fc').style.color=fc<=28?'var(--green)':fc<=38?'var(--orange)':'var(--red)';
+  } else {
+    document.getElementById('pc-fc').textContent='—';
+    document.getElementById('pc-fc').style.color='var(--muted)';
+  }
+  var t=parseFloat(document.getElementById('pc-target').value)||30;
+  document.getElementById('pc-sug').textContent=cp>0?fmt(cp/(t/100)):'—';
+}
+
+function salvaRicettaCucina(){
+  var nome=document.getElementById('fc-nome').value.trim();
+  if(!nome){alert('Inserisci il nome della ricetta');return;}
+  var rows=document.querySelectorAll('#ing-list-cucina .ing-row');
+  var ings=[];
+  rows.forEach(function(row){
+    var sel=row.querySelector('select');
+    var qty=parseFloat(row.querySelector('input[type=number]').value||0);
+    var ing=ING_CUCINA.find(function(i){return i.id===sel.value;});
+    if(qty>0&&ing)ings.push({id:sel.value,qty:qty,unit:ing.unit});
+  });
+  ricetteCucina.push({
+    id:uid(), nome:nome,
+    cat:document.getElementById('fc-cat').value,
+    prezzo:parseFloat(document.getElementById('fc-prezzo').value)||0,
+    porzioni:parseInt(document.getElementById('fc-porzioni').value)||4,
+    note:document.getElementById('fc-note').value.trim(),
+    locked:false, ingredienti:ings
+  });
+  cucinaPersonali++;
+  closeModal('modal-form-cucina');
+  renderCucina();
+}
+
+/* ================================================================
+   RENDER BAR
+================================================================ */
+function renderBar(){
+  var grid=document.getElementById('grid-bar');
+  var cards=cocktailBar.map(function(c){
+    var costo=costoBar(c);
+    var fc=c.prezzo>0?(costo/c.prezzo)*100:null;
+    var ingNomi=(c.ingredienti||[]).map(function(ci){
+      var ing=ING_BAR.find(function(i){return i.id===ci.id;});
+      return ing?ing.nome:'?';
+    }).join(', ');
+    return '<div class="cocktail-card bar-card '+(c.locked?'locked':'unlocked')+'" onclick="openViewBar(\''+c.id+'\')">' +
+      '<div class="card-top-line"></div>' +
+      (c.locked?'<div class="card-lock">🔒</div>':'') +
+      '<div class="card-emoji">🍸</div>' +
+      '<div class="card-name">'+(c.locked?c.nome+' <span class="locked-badge">🔒 Demo</span>':c.nome)+'</div>' +
+      '<div class="card-ing">'+ingNomi+'</div>' +
+      '<div class="card-footer">' +
+        '<div><div class="cost-label">Costo drink</div><div class="cost-value" style="color:var(--bar-gold)">'+fmt(costo)+'</div></div>' +
+        (fc!==null?'<span class="fc-badge '+bcBadgeClass(fc)+'">BC '+fc.toFixed(1)+'%</span>':'<span class="fc-badge" style="color:var(--muted)">No prezzo</span>') +
+      '</div></div>';
+  }).join('');
+
+  var addCard='<div class="add-card bar-add-card" onclick="nuovaCocktailBar()">' +
+    '<div class="add-card-icon">➕</div>' +
+    '<div class="add-card-label">Aggiungi il tuo cocktail</div>' +
+    '<div class="add-card-sub">'+(barPersonali>=MAX_PERSONALI?'<span style="color:var(--red)">Limite demo raggiunto</span>':'1 slot disponibile nella demo')+'</div>' +
+    '</div>';
+
+  grid.innerHTML=cards+addCard;
+
+  var totCosto=cocktailBar.reduce(function(s,c){return s+costoBar(c);},0);
+  var avg=cocktailBar.length?totCosto/cocktailBar.length:0;
+  document.getElementById('stats-bar').innerHTML=
+    '<div class="stat-card bar-stat"><div class="stat-val">'+cocktailBar.length+'</div><div class="stat-lbl">Cocktail</div></div>'+
+    '<div class="stat-card bar-stat"><div class="stat-val">'+fmt(avg)+'</div><div class="stat-lbl">Costo medio</div></div>'+
+    '<div class="stat-card bar-stat"><div class="stat-val">'+ING_BAR.length+'</div><div class="stat-lbl">Ingredienti</div></div>';
+}
+
+/* ================================================================
+   VIEW BAR
+================================================================ */
+function openViewBar(id){
+  var c=cocktailBar.find(function(x){return x.id===id;});
+  if(!c)return;
+  var costo=costoBar(c);
+  var fc=c.prezzo>0?(costo/c.prezzo)*100:null;
+  document.getElementById('vb-nome').textContent=c.nome;
+  document.getElementById('vb-cat').textContent=c.cat;
+  var noteEl=document.getElementById('vb-note');
+  noteEl.textContent=c.note||''; noteEl.style.display=c.note?'block':'none';
+  document.getElementById('vb-ing-list').innerHTML=(c.ingredienti||[]).map(function(ci){
+    var ing=ING_BAR.find(function(i){return i.id===ci.id;});
+    if(!ing)return '';
+    var cv=costoIngBar(ci.id,ci.qty);
+    return '<div class="view-ing-row"><div><div class="view-ing-name">'+ing.nome+'</div><div class="view-ing-qty">'+ci.qty+' '+ing.unit+'</div></div><div class="view-ing-cost" style="color:var(--bar-gold)">'+fmt(cv)+'</div></div>';
+  }).join('');
+  document.getElementById('vb-total').textContent=fmt(costo);
+  var fcHtml=fc!==null?
+    '<span class="fc-pill '+bcBadgeClass(fc)+'">BC '+fc.toFixed(1)+'%</span>'+
+    '<span class="fc-pill" style="background:rgba(255,255,255,.05);color:var(--muted)">Prezzo: '+fmt(c.prezzo)+'</span>'+
+    '<span class="fc-pill" style="background:rgba(76,175,125,.08);color:var(--green)">Margine: '+fmt(c.prezzo-costo)+'</span>':
+    '<span class="fc-pill" style="background:rgba(255,255,255,.05);color:var(--muted)">Nessun prezzo impostato</span>';
+  document.getElementById('vb-fc-detail').innerHTML=fcHtml;
+  var sug=costo>0?costo/0.25:0;
+  document.getElementById('vb-sug-box').innerHTML=
+    '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--muted)">Target BC %</span>'+
+    '<input type="number" value="25" min="1" max="100" step="1" oninput="aggiornaVBSug('+costo+',this.value)" style="width:55px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:13px;font-weight:600;outline:none;text-align:center">'+
+    '<span style="font-size:12px;color:var(--muted)">%</span></div>'+
+    '<div style="text-align:right"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">💡 Prezzo suggerito</div>'+
+    '<div class="sug-val" id="vb-sug-val">'+fmt(sug)+'</div></div>';
+  openModal('modal-view-bar');
+}
+function aggiornaVBSug(costo,t){
+  var el=document.getElementById('vb-sug-val');
+  if(el)el.textContent=costo>0&&t>0?fmt(costo/(t/100)):'—';
+}
+
+/* ================================================================
+   NUOVO COCKTAIL BAR
+================================================================ */
+function nuovaCocktailBar(){
+  if(barPersonali>=MAX_PERSONALI){ openModal('modal-upgrade'); return; }
+  document.getElementById('fb-nome').value='';
+  document.getElementById('fb-cat').value='Classici IBA';
+  document.getElementById('fb-prezzo').value='';
+  document.getElementById('fb-note').value='';
+  document.getElementById('ing-list-bar').innerHTML='';
+  updateBarPreview();
+  openModal('modal-form-bar');
+}
+
+function addIngBarRow(){
+  var list=document.getElementById('ing-list-bar');
+  var row=document.createElement('div');
+  row.className='ing-row';
+  var opts=ING_BAR.map(function(i){return '<option value="'+i.id+'">'+i.nome+'</option>';}).join('');
+  row.innerHTML='<select onchange="updateBarPreview()">'+opts+'</select>'+
+    '<input type="number" placeholder="Qtà" step="0.1" min="0" oninput="updateBarPreview()">'+
+    '<div class="unit-label">'+ING_BAR[0].unit+'</div>'+
+    '<button class="btn-icon" style="color:var(--red)" onclick="this.parentElement.remove();updateBarPreview()">×</button>';
+  var sel=row.querySelector('select');
+  sel.addEventListener('change',function(){
+    var ing=ING_BAR.find(function(i){return i.id===sel.value;});
+    row.querySelector('.unit-label').textContent=ing?ing.unit:'';
+    updateBarPreview();
+  });
+  list.appendChild(row);
+  updateBarPreview();
+}
+
+function updateBarPreview(){
+  var rows=document.querySelectorAll('#ing-list-bar .ing-row');
+  var tot=0;
+  rows.forEach(function(row){
+    var sel=row.querySelector('select');
+    var qty=parseFloat(row.querySelector('input[type=number]').value||0);
+    tot+=costoIngBar(sel.value,qty);
+  });
+  document.getElementById('pb-costo').textContent=fmt(tot);
+  var prezzo=parseFloat(document.getElementById('fb-prezzo').value);
+  if(prezzo&&tot){
+    var fc=(tot/prezzo)*100;
+    document.getElementById('pb-fc').textContent='BC '+fc.toFixed(1)+'%';
+    document.getElementById('pb-fc').style.color=fc<=25?'var(--green)':fc<=35?'var(--orange)':'var(--red)';
+  } else {
+    document.getElementById('pb-fc').textContent='—';
+    document.getElementById('pb-fc').style.color='var(--muted)';
+  }
+  var t=parseFloat(document.getElementById('pb-target').value)||25;
+  document.getElementById('pb-sug').textContent=tot>0?fmt(tot/(t/100)):'—';
+}
+
+function salvaCocktailBar(){
+  var nome=document.getElementById('fb-nome').value.trim();
+  if(!nome){alert('Inserisci il nome del cocktail');return;}
+  var rows=document.querySelectorAll('#ing-list-bar .ing-row');
+  var ings=[];
+  rows.forEach(function(row){
+    var sel=row.querySelector('select');
+    var qty=parseFloat(row.querySelector('input[type=number]').value||0);
+    if(qty>0)ings.push({id:sel.value,qty:qty});
+  });
+  cocktailBar.push({
+    id:uid(), nome:nome,
+    cat:document.getElementById('fb-cat').value,
+    prezzo:parseFloat(document.getElementById('fb-prezzo').value)||0,
+    note:document.getElementById('fb-note').value.trim(),
+    locked:false, ingredienti:ings
+  });
+  barPersonali++;
+  closeModal('modal-form-bar');
+  renderBar();
+}
+
+/* ================================================================
+   INIT
+================================================================ */
+renderCucina();
+renderBar();
+
+// Chiudi overlay cliccando fuori
+document.querySelectorAll('.overlay').forEach(function(o){
+  o.addEventListener('click',function(e){
+    if(e.target===o&&!o.id==='modal-upgrade')o.classList.add('hidden');
+  });
+});
+
+/* ── MODIFICA PREZZO RICETTE DEMO ────────────────────────── */
+var currentViewCucinaId=null;
+
+function openEditDemoRicetta(id){
+  var r=ricetteCucina.find(function(x){return x.id===id;});
+  if(!r)return;
+  document.getElementById('ed-id').value=id;
+  document.getElementById('ed-prezzo').value=r.prezzo||'';
+  document.getElementById('ed-porzioni').value=r.porzioni||4;
+  closeModal('modal-view-cucina');
+  openModal('modal-edit-demo');
+}
+
+function salvaEditDemo(){
+  var id=document.getElementById('ed-id').value;
+  var prezzo=parseFloat(document.getElementById('ed-prezzo').value)||0;
+  var porzioni=parseInt(document.getElementById('ed-porzioni').value)||4;
+  ricetteCucina=ricetteCucina.map(function(r){
+    if(r.id===id){r.prezzo=prezzo;r.porzioni=porzioni;}
+    return r;
+  });
+  closeModal('modal-edit-demo');
+  renderCucina();
+}
+
+/* ── QR CODE DEMO ─────────────────────────────────────────── */
+function buildMenuHtml(){
+  var piatti=ricetteCucina.filter(function(r){return r.prezzo>0;});
+  var cocktail=cocktailBar.filter(function(c){return c.prezzo>0;});
+  var menuHtml='<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu Demo — FoodCost 360</title>';
+  menuHtml+='<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">';
+  menuHtml+='<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0A0A0F;color:#E8E8F0;font-family:\'DM Sans\',sans-serif;padding-bottom:40px}.hdr{background:#12121A;border-bottom:2px solid #E8C547;padding:24px 16px;text-align:center}.hn{font-family:\'Bebas Neue\',sans-serif;font-size:36px;letter-spacing:3px;color:#E8C547}.hs{font-size:12px;color:#6B6B8A;margin-top:4px}.wrap{max-width:600px;margin:0 auto;padding:0 16px}.ct{font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:#E8C547;margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid #2A2A3E}.pi{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(42,42,62,.5)}.pn{font-size:14px;font-weight:600}.pp{font-size:15px;font-weight:700;color:#E8C547;flex-shrink:0;margin-left:12px}.demo-note{text-align:center;padding:20px;font-size:11px;color:#2A2A3E;margin-top:20px}</style></head><body>';
+  menuHtml+='<div class="hdr"><div class="hn">IL NOSTRO MENU</div><div class="hs">Generato con FoodCost 360</div></div><div class="wrap">';
+  if(piatti.length){menuHtml+='<div class="ct">Cucina</div>';piatti.forEach(function(r){menuHtml+='<div class="pi"><div class="pn">'+r.nome+'</div><div class="pp">€'+r.prezzo.toFixed(2)+'</div></div>';});}
+  if(cocktail.length){menuHtml+='<div class="ct">Bar & Cocktail</div>';cocktail.forEach(function(c){menuHtml+='<div class="pi"><div class="pn">'+c.nome+'</div><div class="pp">€'+c.prezzo.toFixed(2)+'</div></div>';});}
+  menuHtml+='<div class="demo-note">FoodCost 360 · foodcost360.it</div></div></body></html>';
+  return menuHtml;
+}
+
+function apriQRDemo(){
+  mostraModalQR('cucina');
+}
+
+function apriQRDemoBar(){
+  mostraModalQR('bar');
+}
+
+function mostraModalQR(sezione){
+  // Crea il blob URL del menu
+  var menuHtml=buildMenuHtml();
+  var blob=new Blob([menuHtml],{type:'text/html'});
+  var menuUrl=URL.createObjectURL(blob);
+
+  // Genera QR code usando API gratuita
+  var qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent('https://foodcost360.it/demo/foodcost360-demo.html');
+
+  // Mostra modal
+  var existing=document.getElementById('modal-qr-demo');
+  if(existing)existing.remove();
+
+  var modal=document.createElement('div');
+  modal.id='modal-qr-demo';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML=
+    '<div style="background:#12121A;border:1px solid #2A2A3E;border-radius:16px;padding:28px;max-width:340px;width:100%;text-align:center">'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;color:#E8C547;margin-bottom:4px">📱 Menu QR Code</div>'+
+      '<p style="font-size:12px;color:#6B6B8A;margin-bottom:20px">Scansiona per vedere il menu digitale</p>'+
+      '<img src="'+qrUrl+'" alt="QR Code" style="width:200px;height:200px;border-radius:10px;background:#fff;padding:8px;margin-bottom:16px">'+
+      '<p style="font-size:11px;color:#6B6B8A;margin-bottom:20px">Nella versione completa il QR punta al tuo menu personalizzato</p>'+
+      '<div style="display:flex;gap:8px;justify-content:center">'+
+        '<a href="'+menuUrl+'" target="_blank" style="background:linear-gradient(135deg,#E8C547,#C9A82C);color:#0A0D0A;text-decoration:none;font-weight:700;font-size:13px;padding:10px 20px;border-radius:8px">Apri menu →</a>'+
+        '<button onclick="document.getElementById(\'modal-qr-demo\').remove()" style="background:none;border:1px solid #2A2A3E;color:#6B6B8A;border-radius:8px;padding:10px 16px;cursor:pointer;font-family:\'DM Sans\',sans-serif;font-size:13px">Chiudi</button>'+
+        '<a href="'+qrUrl+'" download="qr-menu-demo.png" style="background:#1A1A24;border:1px solid #2A2A3E;color:#E8E8F0;text-decoration:none;font-size:13px;padding:10px 16px;border-radius:8px">⬇ QR</a>'+
+      '</div>'+
+      '<div style="margin-top:16px"><a href="../shop.html" style="font-size:12px;color:#E8C547;text-decoration:none">Acquista la versione completa →</a></div>'+
+    '</div>';
+
+  modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
+  document.body.appendChild(modal);
+}</script>
+</body>
+</html>

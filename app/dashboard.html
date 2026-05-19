@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0C0C0E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FoodCost 360">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/app/manifest.json">
+<link rel="apple-touch-icon" href="/app/apple-touch-icon.png">
+<title>Dashboard — FoodCost 360</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230C0C0E' rx='4'/%3E%3Ctext x='16' y='13' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='11' font-weight='700' fill='%23E8C547' letter-spacing='0.5'%3EFOOD%3C/text%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='11' font-weight='700' fill='%23E8C547' letter-spacing='0.5'%3ECOST%3C/text%3E%3Ctext x='16' y='30' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='8' font-weight='700' fill='%23ffffff' letter-spacing='1'%3E360%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#0C0C0E;--dark:#12121A;--card:#1A1A24;--border:#2A2A3E;
+  --text:#E8E8F0;--muted:#6B6B8A;--gold:#E8C547;--gold2:#C9A82C;
+  --green:#3EC97A;--red:#E05252;--blue:#3399FF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
+
+/* BG TEXTURE */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse at 20% 20%,rgba(232,197,71,.04) 0%,transparent 60%),
+              radial-gradient(ellipse at 80% 80%,rgba(51,153,255,.03) 0%,transparent 60%);
+  pointer-events:none;z-index:0
+}
+
+/* LOADING */
+.loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .4s}
+.loading.hide{opacity:0;pointer-events:none}
+.loading-logo{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:4px;color:var(--gold);margin-bottom:8px}
+.loading-sub{font-size:12px;color:var(--muted);letter-spacing:2px}
+.loading-bar{width:120px;height:2px;background:var(--border);border-radius:2px;margin-top:20px;overflow:hidden}
+.loading-bar::after{content:'';display:block;height:100%;background:var(--gold);border-radius:2px;animation:load 1.5s ease infinite}
+@keyframes load{0%{width:0;margin-left:0}50%{width:100%;margin-left:0}100%{width:0;margin-left:100%}}
+
+/* LOGIN OVERLAY */
+.overlay{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.overlay.hidden{display:none}
+.login-box{background:var(--dark);border:1px solid var(--border);border-radius:16px;padding:32px 28px;width:100%;max-width:380px}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo .l1{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold);display:block;line-height:1}
+.login-logo .l2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:6px;color:#fff;display:block;line-height:1}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:24px}
+.tab{padding:9px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer}
+.tab.on{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.lform{display:flex;flex-direction:column;gap:12px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.fg input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%;transition:.2s}
+.fg input:focus{border-color:rgba(232,197,71,.5)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0C0C0E;border:none;border-radius:9px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%}
+.btn-gold:disabled{opacity:.5;cursor:not-allowed}
+.divider{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin:2px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.btn-google{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:11px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.lmsg{border-radius:8px;padding:10px 12px;font-size:13px;display:none}
+.lmsg.err{background:rgba(224,82,82,.1);border:1px solid rgba(224,82,82,.3);color:var(--red)}
+.lmsg.ok{background:rgba(62,201,122,.1);border:1px solid rgba(62,201,122,.3);color:var(--green)}
+.forgot{font-size:12px;color:var(--muted);text-align:right;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0}
+
+/* DASHBOARD */
+.dashboard{display:none;min-height:100vh;position:relative;z-index:1}
+
+/* TOPBAR */
+.topbar{background:rgba(18,18,26,.9);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(10px);position:sticky;top:0;z-index:50}
+.topbar-logo{display:flex;flex-direction:column;line-height:1}
+.topbar-logo .l1{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--gold)}
+.topbar-logo .l2{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:#fff}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.user-badge{font-size:12px;color:var(--muted)}
+.piano-badge{background:rgba(232,197,71,.1);color:var(--gold);border:1px solid rgba(232,197,71,.2);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.btn-sm{padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer}
+.btn-sm:hover{color:var(--text)}
+
+/* CONTENUTO */
+.content{max-width:800px;margin:0 auto;padding:40px 24px}
+
+.welcome{margin-bottom:48px}
+.welcome-greeting{font-size:13px;color:var(--muted);letter-spacing:.5px;margin-bottom:6px;text-transform:uppercase}
+.welcome-title{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:1px;line-height:1;color:var(--text)}
+.welcome-title span{color:var(--gold)}
+
+/* TOOL CARDS */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:40px}
+
+.tool-card{background:var(--dark);border:1px solid var(--border);border-radius:16px;padding:28px 24px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;text-decoration:none;display:block}
+.tool-card::before{content:'';position:absolute;inset:0;opacity:0;transition:.2s}
+.tool-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.tool-card.cucina{border-color:rgba(62,201,122,.2)}
+.tool-card.cucina::before{background:linear-gradient(135deg,rgba(62,201,122,.05),transparent)}
+.tool-card.cucina:hover{border-color:rgba(62,201,122,.4)}
+.tool-card.cucina::before{opacity:1}
+.tool-card.bar{border-color:rgba(232,197,71,.2)}
+.tool-card.bar::before{background:linear-gradient(135deg,rgba(232,197,71,.05),transparent);opacity:1}
+.tool-card.bar:hover{border-color:rgba(232,197,71,.4)}
+.tool-card.qr{border-color:rgba(51,153,255,.2)}
+.tool-card.qr::before{background:linear-gradient(135deg,rgba(51,153,255,.05),transparent);opacity:1}
+.tool-card.qr:hover{border-color:rgba(51,153,255,.4)}
+
+/* CARD BLOCCATA */
+.tool-card.locked{cursor:default;opacity:.6}
+.tool-card.locked:hover{transform:none;box-shadow:none}
+.lock-icon{position:absolute;top:16px;right:16px;font-size:18px;opacity:.5}
+.upgrade-tag{position:absolute;top:14px;right:14px;background:rgba(232,197,71,.1);color:var(--gold);border:1px solid rgba(232,197,71,.2);font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px}
+
+.tool-emoji{font-size:36px;margin-bottom:16px;display:block}
+.tool-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.5px;margin-bottom:6px}
+.tool-name.cucina{color:#3EC97A}
+.tool-name.bar{color:var(--gold)}
+.tool-name.qr{color:var(--blue)}
+.tool-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.tool-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.tool-btn.cucina{background:rgba(62,201,122,.1);color:#3EC97A;border:1px solid rgba(62,201,122,.3)}
+.tool-btn.cucina:hover{background:rgba(62,201,122,.2)}
+.tool-btn.bar{background:rgba(232,197,71,.1);color:var(--gold);border:1px solid rgba(232,197,71,.3)}
+.tool-btn.bar:hover{background:rgba(232,197,71,.2)}
+.tool-btn.qr{background:rgba(51,153,255,.1);color:var(--blue);border:1px solid rgba(51,153,255,.3)}
+.tool-btn.qr:hover{background:rgba(51,153,255,.2)}
+.tool-btn.locked-btn{background:var(--card);color:var(--muted);border:1px solid var(--border);cursor:default}
+
+/* UPGRADE BOX */
+.upgrade-box{background:linear-gradient(135deg,rgba(232,197,71,.06),rgba(232,197,71,.02));border:1px solid rgba(232,197,71,.15);border-radius:14px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.upgrade-text h3{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);margin-bottom:4px}
+.upgrade-text p{font-size:13px;color:var(--muted);line-height:1.6}
+.btn-upgrade{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0C0C0E;border:none;border-radius:9px;padding:11px 24px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap}
+
+/* ACCOUNT NON ATTIVO */
+.not-active{text-align:center;padding:60px 24px}
+.not-active-icon{font-size:56px;margin-bottom:20px}
+.not-active h2{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);margin-bottom:10px}
+.not-active p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto}
+
+@media(max-width:600px){
+  .content{padding:24px 16px}
+  .welcome-title{font-size:32px}
+  .tools-grid{grid-template-columns:1fr}
+  .topbar{padding:10px 16px}
+  .user-badge{display:none}
+  .upgrade-box{flex-direction:column;text-align:center}
+}
+
+.pwd-wrap{position:relative;margin-bottom:6px}
+.pwd-wrap input{margin-bottom:0!important;padding-right:42px!important}
+.eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#6B6B8A;font-size:16px;padding:4px;line-height:1}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <div class="loading-logo">FOODCOST</div>
+  <div class="loading-sub">360</div>
+  <div class="loading-bar"></div>
+</div>
+
+<!-- LOGIN OVERLAY -->
+<div class="overlay" id="overlay-login">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="l1">FOODCOST</span>
+      <span class="l2">360</span>
+    </div>
+    <div class="tabs">
+      <button class="tab on" id="tab-login" onclick="switchTab('login')">Accedi</button>
+      <button class="tab" id="tab-reg" onclick="switchTab('reg')">Registrati</button>
+    </div>
+    <div class="lmsg" id="lmsg"></div>
+
+    <!-- LOGIN -->
+    <div class="lform" id="form-login">
+      <div class="fg"><label>Email</label><input type="email" id="l-email" placeholder="mario@ristorante.it" autocomplete="email"></div>
+      <div class="fg">
+        <label>Password</label>
+        <div class="pwd-wrap"><input type="password" id="l-pwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"><button type="button" class="eye-btn" onclick="toggleEye('l-pwd',this)">👁</button></div>
+        <button class="forgot" onclick="doForgot()">Password dimenticata?</button>
+      </div>
+      <button class="btn-gold" id="btn-login" onclick="doLogin()">Accedi</button>
+      <div class="divider">oppure</div>
+      <button class="btn-google" onclick="doGoogle()">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continua con Google
+      </button>
+    </div>
+
+    <!-- REGISTRAZIONE -->
+    <div class="lform" id="form-reg" style="display:none">
+      <div class="fg"><label>Nome e Cognome</label><input type="text" id="r-nome" placeholder="Mario Rossi" autocomplete="name"></div>
+      <div class="fg"><label>Email</label><input type="email" id="r-email" placeholder="mario@ristorante.it" autocomplete="email"></div>
+      <div class="fg"><label>Password</label><div class="pwd-wrap"><input type="password" id="r-pwd" placeholder="Minimo 6 caratteri" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()"><button type="button" class="eye-btn" onclick="toggleEye('r-pwd',this)">👁</button></div></div>
+      <button class="btn-gold" id="btn-reg" onclick="doRegister()">Crea account</button>
+      <div class="divider">oppure</div>
+      <button class="btn-google" onclick="doGoogle()">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continua con Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo"><span class="l1">FOODCOST</span><span class="l2">360</span></div>
+    <div class="topbar-right">
+      <span class="user-badge" id="user-email"></span>
+      <span class="piano-badge" id="piano-badge"></span>
+      <button class="btn-sm" onclick="toggleSettings()" title="Impostazioni account">⚙️</button>
+      <button class="btn-sm" onclick="doLogout()">Esci</button>
+    </div>
+  </div>
+
+  <!-- PANNELLO IMPOSTAZIONI -->
+  <div id="settings-panel" style="display:none;position:fixed;top:48px;right:0;width:300px;background:#12121A;border:1px solid #2A2A3E;border-top:none;border-radius:0 0 0 12px;padding:20px;z-index:9998;box-shadow:-4px 4px 20px rgba(0,0,0,.4);font-family:'DM Sans',sans-serif">
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:#E8C547;margin-bottom:16px">⚙️ Il mio account</h3>
+
+    <!-- INFO -->
+    <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #2A2A3E">
+      <div style="font-size:10px;font-weight:600;color:#6B6B8A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Email</div>
+      <div style="font-size:13px;color:#E8E8F0;word-break:break-all" id="sp-email-show"></div>
+      <div style="font-size:10px;font-weight:600;color:#6B6B8A;text-transform:uppercase;letter-spacing:.5px;margin-top:10px;margin-bottom:4px">Piano attivo</div>
+      <div style="font-size:13px;color:#E8C547;font-weight:700;text-transform:uppercase" id="sp-piano-show"></div>
+    </div>
+
+    <!-- CAMBIA PASSWORD -->
+    <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #2A2A3E">
+      <div style="font-size:10px;font-weight:600;color:#6B6B8A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Cambia password</div>
+      <div class="pwd-wrap"><input type="password" id="sp-pwd1" placeholder="Nuova password" style="width:100%;background:#0C0C0E;border:1px solid #2A2A3E;border-radius:7px;padding:9px 12px;color:#E8E8F0;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;padding-right:42px"><button type="button" class="eye-btn" onclick="toggleEye('sp-pwd1',this)">👁</button></div>
+      <div class="pwd-wrap"><input type="password" id="sp-pwd2" placeholder="Conferma password" style="width:100%;background:#0C0C0E;border:1px solid #2A2A3E;border-radius:7px;padding:9px 12px;color:#E8E8F0;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;padding-right:42px"><button type="button" class="eye-btn" onclick="toggleEye('sp-pwd2',this)">👁</button></div>
+      <button onclick="changePwd()" style="width:100%;background:linear-gradient(135deg,#E8C547,#C9A82C);color:#0C0C0E;border:none;border-radius:7px;padding:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer">Aggiorna password</button>
+      <div id="sp-pwd-msg" style="font-size:12px;margin-top:6px;display:none"></div>
+    </div>
+
+    <!-- CAMBIA EMAIL -->
+    <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #2A2A3E">
+      <div style="font-size:10px;font-weight:600;color:#6B6B8A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Cambia email</div>
+      <input type="email" id="sp-email-new" placeholder="Nuova email" style="width:100%;background:#0C0C0E;border:1px solid #2A2A3E;border-radius:7px;padding:9px 12px;color:#E8E8F0;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:6px">
+      <button onclick="changeEmail()" style="width:100%;background:linear-gradient(135deg,#E8C547,#C9A82C);color:#0C0C0E;border:none;border-radius:7px;padding:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer">Aggiorna email</button>
+      <div id="sp-email-msg" style="font-size:12px;margin-top:6px;display:none"></div>
+    </div>
+
+    <!-- LOGOUT -->
+    <button onclick="doLogout()" style="width:100%;background:none;border:1px solid #E05252;color:#E05252;border-radius:7px;padding:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer">🚪 Esci dall'account</button>
+  </div>
+
+  <div class="content">
+
+    <!-- WELCOME -->
+    <div class="welcome">
+      <div class="welcome-greeting">Bentornato</div>
+      <div class="welcome-title">I tuoi <span>tool</span><br>professionali</div>
+    </div>
+
+    <!-- ACCOUNT NON ATTIVO -->
+    <div class="not-active" id="not-active" style="display:none">
+      <div class="not-active-icon">🔒</div>
+      <h2>Account in attesa di attivazione</h2>
+      <p>Ti sei registrato con successo! Il tuo accesso verrà attivato entro poche ore dopo la conferma del pagamento.<br>Riceverai una notifica via email o WhatsApp.</p>
+      <a href="/shop.html" class="btn-upgrade">Vai ai piani →</a>
+      <div style="margin-top:16px">
+        <button onclick="doLogout()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">Esci dall'account</button>
+      </div>
+    </div>
+
+    <!-- TOOL CARDS -->
+    <div id="tools-section" style="display:none">
+      <div class="tools-grid" id="tools-grid"></div>
+      <div id="upgrade-section" style="display:none">
+        <div class="upgrade-box">
+          <div class="upgrade-text">
+            <h3>🚀 Vuoi sbloccare tutti i tool?</h3>
+            <p>Fai l'upgrade al Pacchetto 360 e accedi a FoodCost Cucina, BeverageCost Bar e Menù QR Code — tutto incluso, pagamento unico.</p>
+          </div>
+          <a href="/shop.html" class="btn-upgrade">Fai l'upgrade →</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var SUPABASE_URL='https://lhzpueahpfpqkipwqlgk.supabase.co';
+var SUPABASE_KEY='sb_publishable_RcX37_4t0429HeaBRYs03w_C-53rBQV';
+var client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+var TOOLS=[
+  {
+    id:'cucina',
+    emoji:'🍳',
+    nome:'FoodCost Cucina',
+    desc:'Calcola il food cost di ogni ricetta, scopri quali piatti eliminare e ottimizza il tuo menù.',
+    url:'/app/foodcost-cucina.html',
+    piani:['singolo-cucina','cucina','bundle','360']
+  },
+  {
+    id:'bar',
+    emoji:'🍸',
+    nome:'BeverageCost Bar',
+    desc:'Gestisci cocktail, caffetteria e beverage cost. Scopri quali drink ti fanno guadagnare davvero.',
+    url:'/app/beveragecost-bar.html',
+    piani:['singolo-bar','bar','bundle','360']
+  },
+  {
+    id:'qr',
+    emoji:'📱',
+    nome:'Menù QR Code',
+    desc:'Crea il tuo menù digitale in minuti. I clienti lo scansionano dal telefono, tu lo aggiorni quando vuoi.',
+    url:'/app/menu-qr.html',
+    piani:['singolo-qr','360']
+  }
+];
+
+/* ── TABS ──────────────────────────────────────────── */
+function switchTab(t){
+  document.getElementById('form-login').style.display=t==='login'?'flex':'none';
+  document.getElementById('form-reg').style.display=t==='reg'?'flex':'none';
+  document.getElementById('tab-login').className='tab'+(t==='login'?' on':'');
+  document.getElementById('tab-reg').className='tab'+(t==='reg'?' on':'');
+  hideMsg();
+}
+
+/* ── MESSAGGI ──────────────────────────────────────── */
+function showMsg(txt,tipo){
+  var el=document.getElementById('lmsg');
+  el.textContent=txt;el.className='lmsg '+(tipo||'err');el.style.display='block';
+}
+function hideMsg(){document.getElementById('lmsg').style.display='none';}
+
+function errIT(msg){
+  if(msg.includes('Invalid login'))return 'Email o password non corretti';
+  if(msg.includes('Email not confirmed'))return 'Devi confermare la tua email prima di accedere';
+  if(msg.includes('already registered'))return 'Email già registrata — accedi invece';
+  if(msg.includes('rate limit'))return 'Troppi tentativi, aspetta qualche minuto';
+  if(msg.includes('sending'))return 'Errore invio email. Riprova tra qualche minuto.';
+  return msg;
+}
+
+/* ── LOGIN ─────────────────────────────────────────── */
+async function doLogin(){
+  var email=document.getElementById('l-email').value.trim();
+  var pwd=document.getElementById('l-pwd').value;
+  if(!email||!pwd){showMsg('Inserisci email e password');return;}
+  hideMsg();
+  var btn=document.getElementById('btn-login');
+  btn.disabled=true;btn.textContent='...';
+  var res=await client.auth.signInWithPassword({email:email,password:pwd});
+  btn.disabled=false;btn.textContent='Accedi';
+  if(res.error){showMsg(errIT(res.error.message));return;}
+  await loadDashboard(res.data.user);
+}
+
+/* ── REGISTRAZIONE ─────────────────────────────────── */
+async function doRegister(){
+  var nome=document.getElementById('r-nome').value.trim();
+  var email=document.getElementById('r-email').value.trim();
+  var pwd=document.getElementById('r-pwd').value;
+  if(!nome||!email||!pwd){showMsg('Compila tutti i campi');return;}
+  if(pwd.length<6){showMsg('Password minimo 6 caratteri');return;}
+  hideMsg();
+  var btn=document.getElementById('btn-reg');
+  btn.disabled=true;btn.textContent='...';
+  var res=await client.auth.signUp({email:email,password:pwd,options:{data:{full_name:nome}}});
+  btn.disabled=false;btn.textContent='Crea account';
+  if(res.error){showMsg(errIT(res.error.message));return;}
+  showMsg('✓ Registrazione completata! Il tuo account verrà attivato a breve.','ok');
+}
+
+/* ── GOOGLE ────────────────────────────────────────── */
+async function doGoogle(){
+  await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});
+}
+
+/* ── FORGOT ────────────────────────────────────────── */
+async function doForgot(){
+  var email=document.getElementById('l-email').value.trim();
+  if(!email){showMsg('Inserisci prima la tua email');return;}
+  await client.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});
+  showMsg('✓ Email inviata! Controlla la casella.','ok');
+}
+
+
+/* ── MOSTRA/NASCONDI PASSWORD ──────────────────────── */
+function toggleEye(inputId, btn){
+  var inp=document.getElementById(inputId);
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
+  else{inp.type='password';btn.textContent='👁';}
+}
+/* ── IMPOSTAZIONI ──────────────────────────────────── */
+function toggleSettings(){
+  var p=document.getElementById('settings-panel');
+  p.style.display=p.style.display==='block'?'none':'block';
+}
+
+document.addEventListener('click',function(e){
+  var panel=document.getElementById('settings-panel');
+  var topbar=document.querySelector('.topbar');
+  if(panel&&panel.style.display==='block'&&!panel.contains(e.target)&&!topbar.contains(e.target)){
+    panel.style.display='none';
+  }
+});
+
+async function changePwd(){
+  var p1=document.getElementById('sp-pwd1').value;
+  var p2=document.getElementById('sp-pwd2').value;
+  var msg=document.getElementById('sp-pwd-msg');
+  msg.style.display='none';
+  if(!p1||p1.length<6){spMsg('sp-pwd-msg','Password minimo 6 caratteri','#E05252');return;}
+  if(p1!==p2){spMsg('sp-pwd-msg','Le password non coincidono','#E05252');return;}
+  var res=await client.auth.updateUser({password:p1});
+  if(res.error){spMsg('sp-pwd-msg','Errore: '+res.error.message,'#E05252');}
+  else{spMsg('sp-pwd-msg','✓ Password aggiornata!','#3EC97A');document.getElementById('sp-pwd1').value='';document.getElementById('sp-pwd2').value='';}
+}
+
+async function changeEmail(){
+  var email=document.getElementById('sp-email-new').value.trim();
+  if(!email||!email.includes('@')){spMsg('sp-email-msg','Inserisci un\'email valida','#E05252');return;}
+  var res=await client.auth.updateUser({email:email});
+  if(res.error){spMsg('sp-email-msg','Errore: '+res.error.message,'#E05252');}
+  else{spMsg('sp-email-msg','✓ Controlla la tua nuova email per confermare','#3EC97A');document.getElementById('sp-email-new').value='';}
+}
+
+function spMsg(id,txt,color){
+  var el=document.getElementById(id);
+  el.textContent=txt;el.style.color=color;el.style.display='block';
+}
+
+/* ── LOGOUT ────────────────────────────────────────── */
+async function doLogout(){
+  await client.auth.signOut();
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('overlay-login').classList.remove('hidden');
+}
+
+/* ── CARICA DASHBOARD ──────────────────────────────── */
+async function loadDashboard(user){
+  // Legge piano aggiornato da Supabase
+  var res=await client.from('accessi').select('piano,attivo').eq('user_id',user.id).single();
+
+  // Nasconde login, mostra dashboard
+  document.getElementById('overlay-login').classList.add('hidden');
+  document.getElementById('dashboard').style.display='block';
+
+  // Info utente nella topbar e nel pannello impostazioni
+  var nome=(user.user_metadata&&user.user_metadata.full_name)||user.email;
+  document.getElementById('user-email').textContent=nome;
+  document.getElementById('sp-email-show').textContent=user.email;
+
+  if(!res.data||!res.data.attivo){
+    // Account non ancora attivato
+    document.getElementById('not-active').style.display='block';
+    document.getElementById('tools-section').style.display='none';
+    document.getElementById('piano-badge').textContent='In attesa';
+    return;
+  }
+
+  var piano=res.data.piano;
+  document.getElementById('piano-badge').textContent=piano.toUpperCase();
+  document.getElementById('sp-piano-show').textContent=piano.toUpperCase();
+  document.getElementById('not-active').style.display='none';
+  document.getElementById('tools-section').style.display='block';
+
+  // Costruisci le card
+  var grid=document.getElementById('tools-grid');
+  var hasLocked=false;
+
+  grid.innerHTML=TOOLS.map(function(t){
+    var unlocked=t.piani.includes(piano);
+    if(!unlocked)hasLocked=true;
+    return '<a href="'+(unlocked?t.url:'#')+'" class="tool-card '+t.id+(unlocked?'':' locked')+'" '+(unlocked?'':'onclick="return false"')+'>'+
+      (unlocked?'':'<span class="upgrade-tag">🔒 Upgrade</span>')+
+      '<span class="tool-emoji">'+t.emoji+'</span>'+
+      '<div class="tool-name '+t.id+'">'+t.nome+'</div>'+
+      '<div class="tool-desc">'+t.desc+'</div>'+
+      '<span class="tool-btn '+(unlocked?t.id:'locked-btn')+'">'+(unlocked?'Apri tool →':'Non incluso nel piano')+'</span>'+
+    '</a>';
+  }).join('');
+
+  // Mostra upgrade box se ha tool bloccati
+  document.getElementById('upgrade-section').style.display=hasLocked?'block':'none';
+}
+
+/* ── INIT ──────────────────────────────────────────── */
+(async function(){
+  // Controlla sessione
+  var session=await client.auth.getSession();
+  var user=session.data.session?session.data.session.user:null;
+
+  if(!user){
+    // Piccola attesa e riprova
+    await new Promise(function(r){setTimeout(r,800);});
+    session=await client.auth.getSession();
+    user=session.data.session?session.data.session.user:null;
+  }
+
+  // Nasconde loading
+  document.getElementById('loading').classList.add('hide');
+
+  if(user){
+    await loadDashboard(user);
+  } else {
+    document.getElementById('overlay-login').classList.remove('hidden');
+  }
+
+  // OAuth callback
+  client.auth.onAuthStateChange(async function(event,session){
+    if(event==='SIGNED_IN'&&session){
+      await loadDashboard(session.user);
+    }
+  });
+})();
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/app/sw.js')
+      .then(function(reg){ console.log('SW registrato'); })
+      .catch(function(err){ console.log('SW errore:', err); });
+  });
+}
+// Install prompt per Android/Desktop
+var deferredPrompt;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostra il bottone installa se non già installata
+  var btn = document.getElementById('btn-installa-app');
+  if(btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', function(){
+  var btn = document.getElementById('btn-installa-app');
+  if(btn) btn.style.display = 'none';
+  deferredPrompt = null;
+});
+function installApp(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(r){
+      deferredPrompt = null;
+    });
+  }
+}
+</script>
+</body>
+</html>

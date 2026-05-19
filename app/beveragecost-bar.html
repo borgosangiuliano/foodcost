@@ -1,0 +1,2574 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./auth-guard.js"></script>
+<style>#fc360-loading{position:fixed;inset:0;background:#0C0B09;z-index:88888;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:"DM Sans",sans-serif;display:none}#fc360-loading .sp{width:36px;height:36px;border:3px solid rgba(212,168,71,.2);border-top-color:#D4A847;border-radius:50%;animation:bspin .7s linear infinite}@keyframes bspin{to{transform:rotate(360deg)}}#fc360-loading p{color:#6B6B8A;font-size:13px}
+/* ── TEMA CAFFETTERIA ─────────────────────────────────────── */
+.caffe-card{background:var(--dark);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:.15s;position:relative}
+.caffe-card:hover{border-color:rgba(76,175,125,.4);transform:translateY(-2px)}
+.caffe-topbar{background:linear-gradient(135deg,#2D4A35,#1A3028);border-bottom:2px solid #4CAF7D}
+.caffe-btn{background:linear-gradient(135deg,#4CAF7D,#388E5A);color:#fff}
+.caffe-btn:hover{filter:brightness(1.1)}
+.caffe-cost-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.caffe-cost-value{font-size:18px;font-weight:800;color:#4CAF7D;font-family:"DM Sans",sans-serif}
+.caffe-fc-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px}
+.caffe-fc-green{background:rgba(76,175,125,.12);color:#4CAF7D;border:1px solid rgba(76,175,125,.3)}
+.caffe-fc-orange{background:rgba(232,149,32,.12);color:#E89520;border:1px solid rgba(232,149,32,.3)}
+.caffe-fc-red{background:rgba(224,82,82,.12);color:#E05252;border:1px solid rgba(224,82,82,.3)}
+.caffe-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.caffe-card-name{font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:.5px;color:var(--text);margin-bottom:4px}
+.caffe-card-cat{font-size:11px;color:var(--muted);margin-bottom:12px}
+.caffe-card-footer{display:flex;align-items:flex-end;justify-content:space-between;margin-top:auto}
+.caffe-card-actions{display:flex;gap:6px}
+.caffe-prezzo{font-size:12px;color:var(--muted);margin-top:2px}
+
+
+/* INGREDIENTE SEARCHABLE BAR */
+.ing-search-wrap{position:relative}
+.ing-search-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;cursor:pointer}
+.ing-search-input:focus{border-color:rgba(212,168,71,.5)}
+.ing-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--dark);border:1px solid var(--border);border-radius:8px;z-index:999;max-height:200px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.ing-dropdown.open{display:block}
+.ing-search-box{padding:6px 8px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--dark)}
+.ing-search-box input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none}
+.ing-option{padding:8px 12px;font-size:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.ing-option:hover,.ing-option.focused{background:rgba(212,168,71,.08);color:var(--bar-gold,#D4A847)}
+.ing-option-nome{font-weight:500}
+.ing-option-cat{font-size:10px;color:var(--muted)}
+.ing-option-empty{padding:12px;text-align:center;font-size:12px;color:var(--muted)}
+.ing-row select.ing-native{display:none}
+
+</style>
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230C0C0E' rx='4'/%3E%3Ctext x='16' y='13' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='11' font-weight='700' fill='%23E8C547' letter-spacing='0.5'%3EFOOD%3C/text%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='11' font-weight='700' fill='%23E8C547' letter-spacing='0.5'%3ECOST%3C/text%3E%3Ctext x='16' y='30' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='8' font-weight='700' fill='%23ffffff' letter-spacing='1'%3E360%3C/text%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeverageCost Bar — FoodCost 360</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0C0B09;
+  --dark:   #141210;
+  --card:   #1C1A16;
+  --border: #2E2A22;
+  --text:   #EDE8DF;
+  --muted:  #7A7265;
+  --gold:   #D4A847;
+  --amber:  #E8761A;
+  --green:  #4CAF7D;
+  --red:    #E05252;
+  --orange: #E89520;
+  --radius: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;display:flex;height:100vh;overflow:hidden}
+
+/* ANALISI */
+.stato-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.stato-eccellente{background:rgba(76,175,125,.15);color:#4CAF7D;border:1px solid rgba(76,175,125,.3)}
+.stato-affidabile{background:rgba(51,153,255,.15);color:#3399FF;border:1px solid rgba(51,153,255,.3)}
+.stato-potenziale{background:rgba(232,149,32,.15);color:#E89520;border:1px solid rgba(232,149,32,.3)}
+.stato-critico{background:rgba(224,82,82,.15);color:#E05252;border:1px solid rgba(224,82,82,.3)}
+.vendite-input{width:65px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center}
+.vendite-input:focus{border-color:rgba(212,168,71,.4)}
+.sidebar{width:220px;min-width:220px;background:var(--dark);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0}
+.logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.logo-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--gold);line-height:1}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;color:var(--muted);transition:.15s;font-size:13px;font-weight:500;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:linear-gradient(135deg,rgba(212,168,71,.15),rgba(232,118,26,.08));color:var(--gold);border:1px solid rgba(212,168,71,.2)}
+.nav-item svg{flex-shrink:0;opacity:.7}
+.nav-item.active svg{opacity:1}
+.sidebar-footer{padding:14px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.page{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--dark);flex-shrink:0}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.5px;color:var(--text)}
+.btn{padding:8px 16px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;transition:.15s}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--amber));color:#0C0B09}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--muted)}
+.btn-danger{background:rgba(224,82,82,.12);color:var(--red);border:1px solid rgba(224,82,82,.2)}
+.btn-danger:hover{background:rgba(224,82,82,.22)}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* SEARCH */
+.search-bar{display:flex;gap:10px;margin-bottom:20px}
+.search-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
+.search-input:focus{border-color:rgba(212,168,71,.4)}
+.search-input::placeholder{color:var(--muted)}
+select.filter{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;cursor:pointer}
+
+/* CARDS GRID */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.cocktail-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.cocktail-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--amber));opacity:0;transition:.2s}
+.cocktail-card:hover{border-color:rgba(212,168,71,.3);transform:translateY(-1px)}
+.cocktail-card:hover::before{opacity:1}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.card-emoji{font-size:26px;line-height:1}
+.card-badge{font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(212,168,71,.12);color:var(--gold);border:1px solid rgba(212,168,71,.2);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.card-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.5px;color:var(--text);margin-bottom:4px}
+.card-ingredients{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;min-height:32px}
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
+.cost-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.cost-value{font-size:18px;font-weight:600;color:var(--gold)}
+.cost-value.no-price{font-size:13px;color:var(--muted);font-weight:400;font-style:italic}
+.fc-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.fc-green{background:rgba(76,175,125,.12);color:var(--green)}
+.fc-orange{background:rgba(232,149,32,.12);color:var(--orange)}
+.fc-red{background:rgba(224,82,82,.12);color:var(--red)}
+.card-actions{display:flex;gap:6px}
+.btn-icon{background:none;border:1px solid var(--border);border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:.15s}
+.btn-icon:hover{color:var(--text);border-color:var(--muted)}
+
+/* TABLE */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);background:rgba(0,0,0,.2)}
+td{padding:10px 14px;border-bottom:1px solid rgba(46,42,34,.6);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(212,168,71,.03)}
+.td-right{text-align:right}
+.td-mono{font-variant-numeric:tabular-nums}
+.td-center{text-align:center}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.overlay.hidden{display:none}
+.modal{background:var(--dark);border:1px solid var(--border);border-radius:14px;width:100%;max-width:580px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.5px;color:var(--gold)}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:6px}
+label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600}
+input,select,textarea{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:.15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:rgba(212,168,71,.5)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+textarea{resize:vertical;min-height:60px}
+.input-group{display:flex;gap:0}
+.input-group input{border-radius:8px 0 0 8px;flex:1}
+.input-group .input-suffix{background:var(--border);border:1px solid var(--border);border-left:none;border-radius:0 8px 8px 0;padding:9px 12px;color:var(--muted);font-size:13px;display:flex;align-items:center;white-space:nowrap}
+
+/* INGREDIENTI IN RICETTA */
+.ing-section{margin-top:16px}
+.ing-section-title{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.ing-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.ing-row{display:grid;grid-template-columns:1fr 90px 70px 28px;gap:6px;align-items:center}
+.ing-row select,
+.ing-row input{font-size:12px;padding:7px 10px}
+.btn-add-ing{background:rgba(212,168,71,.08);border:1px dashed rgba(212,168,71,.3);border-radius:7px;color:var(--gold);padding:8px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%;transition:.15s}
+.btn-add-ing:hover{background:rgba(212,168,71,.14)}
+
+/* PREVIEW COSTO */
+.cost-preview{background:rgba(212,168,71,.06);border:1px solid rgba(212,168,71,.15);border-radius:8px;padding:12px 16px;margin-top:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:gap}
+.preview-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.preview-cost{font-size:24px;font-weight:700;color:var(--gold)}
+.preview-fc{font-size:13px;color:var(--muted)}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:3px;width:fit-content;margin-bottom:20px}
+.tab{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border:none;background:none;transition:.15s}
+.tab.active{background:var(--dark);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px}
+.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.stat-value{font-size:26px;font-weight:700;color:var(--gold)}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+.empty-text{font-size:14px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+
+/* VIEW MODAL - ingredienti lista */
+.view-ing-list{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+.view-ing-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:7px;border:1px solid var(--border)}
+.view-ing-name{font-weight:500}
+.view-ing-qty{font-size:12px;color:var(--muted)}
+.view-ing-cost{font-size:13px;font-weight:600;color:var(--gold)}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.total-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(212,168,71,.06);border:1px solid rgba(212,168,71,.2);border-radius:7px}
+.total-label{font-weight:600}
+.total-cost{font-size:20px;font-weight:700;color:var(--gold)}
+.fc-detail{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+.fc-pill{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600}
+
+/* BOTTOM NAV MOBILE */
+.bottom-nav{display:none}
+
+@media(max-width:700px){
+  .sidebar{display:none}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .cards-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .content{padding:16px;padding-bottom:130px}
+  .bottom-nav{
+    display:flex;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:var(--dark);
+    border-top:1px solid var(--border);
+    z-index:50;
+    padding:8px 0 14px;
+  }
+  .bottom-nav-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    cursor:pointer;background:none;border:none;color:var(--muted);
+    font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;
+    padding:6px 0;transition:.15s;
+  }
+  .bottom-nav-item.active{color:var(--gold)}
+  .bottom-nav-item svg{width:20px;height:20px}
+  .topbar{padding:14px 16px}
+  .modal{max-height:95vh}
+}
+
+/* MENU SELECTOR */
+.menu-selector{padding:8px 10px;border-bottom:1px solid var(--border)}
+.menu-sel-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;margin-bottom:5px}
+.menu-sel-row{display:flex;gap:5px;align-items:center}
+.menu-sel-select{flex:1;background:var(--card);border:1px solid var(--border);border-radius:7px;padding:6px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;cursor:pointer;min-width:0}
+.menu-sel-select:focus{border-color:rgba(212,168,71,.4)}
+.btn-menu-new{background:rgba(212,168,71,.1);border:1px solid rgba(212,168,71,.25);border-radius:7px;color:var(--gold);font-size:18px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
+.btn-menu-new:hover{background:rgba(212,168,71,.2)}
+/* MENUS PAGE */
+.menus-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.menu-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:.2s}
+.menu-card.is-active{border-color:rgba(212,168,71,.4);background:rgba(212,168,71,.04)}
+.menu-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.menu-card-name{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.5px}
+.menu-active-tag{font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(212,168,71,.15);color:var(--gold);border:1px solid rgba(212,168,71,.25);font-weight:600;text-transform:uppercase;white-space:nowrap}
+.menu-card-date{font-size:11px;color:var(--muted);margin-bottom:10px}
+.menu-card-stats{display:flex;gap:14px;padding-top:10px;border-top:1px solid var(--border);margin-bottom:12px}
+.menu-card-stat{font-size:11px;color:var(--muted)}
+.menu-card-stat strong{display:block;font-size:16px;color:var(--gold)}
+.menu-card-btns{display:flex;gap:6px;flex-wrap:wrap}
+/* DROPDOWN */
+.dropdown{position:relative;display:inline-block}
+.drop-menu{display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--dark);border:1px solid var(--border);border-radius:9px;min-width:195px;z-index:100;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.drop-menu.open{display:block}
+.drop-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:.15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.drop-item:hover{background:var(--card);color:var(--gold)}
+.drop-divider{height:1px;background:var(--border)}
+/* PRINT */
+.print-header{display:none}
+@media print{
+  .sidebar,.topbar,.tabs,.search-bar,.bottom-nav,.btn,.btn-icon,.dropdown,
+  .cards-grid,#page-ingredienti,#page-menus{display:none!important}
+  .main,.content{display:block!important;overflow:visible!important;height:auto!important}
+  #page-cocktail{display:block!important;overflow:visible!important;height:auto!important}
+  #cocktail-table{display:block!important}
+  .stats-row{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .stat-card{border:1px solid #ddd!important;background:#fff!important;border-radius:6px;padding:10px 14px}
+  .stat-label{font-size:9px;text-transform:uppercase;color:#555;font-weight:600}
+  .stat-value{font-size:20px;font-weight:700;color:#000!important}
+  .stat-sub{font-size:9px;color:#999}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{background:#f0f0f0!important;color:#000!important;padding:7px 10px;text-align:left;border:1px solid #ccc;font-size:10px;text-transform:uppercase;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  td{padding:7px 10px;border:1px solid #e0e0e0;color:#000!important}
+  .fc-badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .fc-green{background:#d4edda!important;color:#155724!important}
+  .fc-orange{background:#fff3cd!important;color:#856404!important}
+  .fc-red{background:#f8d7da!important;color:#721c24!important}
+  .print-header{display:block!important;padding:0 0 12px;border-bottom:2px solid #000;margin-bottom:14px}
+  .print-title{font-size:22px;font-weight:700;letter-spacing:1px}
+  .print-sub{font-size:11px;color:#555;margin-top:3px}
+}
+
+/* ── TEMA CAFFETTERIA ─────────────────────────────────────── */
+.caffe-card{background:var(--dark);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:.15s;position:relative}
+.caffe-card:hover{border-color:rgba(76,175,125,.4);transform:translateY(-2px)}
+.caffe-topbar{background:linear-gradient(135deg,#2D4A35,#1A3028);border-bottom:2px solid #4CAF7D}
+.caffe-btn{background:linear-gradient(135deg,#4CAF7D,#388E5A);color:#fff}
+.caffe-btn:hover{filter:brightness(1.1)}
+.caffe-cost-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.caffe-cost-value{font-size:18px;font-weight:800;color:#4CAF7D;font-family:"DM Sans",sans-serif}
+.caffe-fc-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px}
+.caffe-fc-green{background:rgba(76,175,125,.12);color:#4CAF7D;border:1px solid rgba(76,175,125,.3)}
+.caffe-fc-orange{background:rgba(232,149,32,.12);color:#E89520;border:1px solid rgba(232,149,32,.3)}
+.caffe-fc-red{background:rgba(224,82,82,.12);color:#E05252;border:1px solid rgba(224,82,82,.3)}
+.caffe-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.caffe-card-name{font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:.5px;color:var(--text);margin-bottom:4px}
+.caffe-card-cat{font-size:11px;color:var(--muted);margin-bottom:12px}
+.caffe-card-footer{display:flex;align-items:flex-end;justify-content:space-between;margin-top:auto}
+.caffe-card-actions{display:flex;gap:6px}
+.caffe-prezzo{font-size:12px;color:var(--muted);margin-top:2px}
+
+
+/* INGREDIENTE SEARCHABLE BAR */
+.ing-search-wrap{position:relative}
+.ing-search-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;cursor:pointer}
+.ing-search-input:focus{border-color:rgba(212,168,71,.5)}
+.ing-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--dark);border:1px solid var(--border);border-radius:8px;z-index:999;max-height:200px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.ing-dropdown.open{display:block}
+.ing-search-box{padding:6px 8px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--dark)}
+.ing-search-box input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none}
+.ing-option{padding:8px 12px;font-size:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.ing-option:hover,.ing-option.focused{background:rgba(212,168,71,.08);color:var(--bar-gold,#D4A847)}
+.ing-option-nome{font-weight:500}
+.ing-option-cat{font-size:10px;color:var(--muted)}
+.ing-option-empty{padding:12px;text-align:center;font-size:12px;color:var(--muted)}
+.ing-row select.ing-native{display:none}
+
+</style>
+</head>
+<body>
+<div id="fc360-loading" style="display:none"><div class="sp"></div><p>Caricamento dati in corso...</p></div>
+<div id="fc360-loading"><div class="sp"></div><p>Caricamento dati in corso...</p></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-title">BeverageCost Bar</div>
+    <div class="logo-sub">Gestione drink & cocktail</div>
+  </div>
+  <div class="menu-selector">
+    <div class="menu-sel-label">Menu attivo</div>
+    <div class="menu-sel-row">
+      <select class="menu-sel-select" id="menu-select" onchange="switchMenu(this.value)"></select>
+      <button class="btn-menu-new" onclick="nuovoMenu()" title="Nuovo menu">+</button>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="nav-item active" id="nav-cocktail" onclick="showPage('cocktail',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 22h8M12 11v11M3 3l9 8 9-8"/><path d="M5 3h14"/></svg>
+      Cocktail
+    </button>
+    <button class="nav-item" id="nav-caffetteria" onclick="showPage('caffetteria',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      Caffetteria
+    </button>
+    <button class="nav-item" id="nav-ingredienti" onclick="showPage('ingredienti',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      Ingredienti
+    </button>
+    <button class="nav-item" id="nav-menus" onclick="showPage('menus',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      I Miei Menu
+    </button>
+    <button class="nav-item" id="nav-analisi" onclick="showPage('analisi',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analisi Menu
+    </button>
+  </nav>
+  <div class="sidebar-footer">v4.0 · Analisi Menu</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- PAGE: COCKTAIL -->
+  <div id="page-cocktail" class="page">
+    <div class="print-header">
+      <div class="print-title" id="print-title">BeverageCost Bar</div>
+      <div class="print-sub" id="print-sub"></div>
+    </div>
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-cocktail-title">🍸 Cocktail</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="dropdown" id="dd-scarica">
+          <button class="btn btn-ghost" onclick="toggleDrop()" style="display:flex;align-items:center;gap:6px;white-space:nowrap">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Scarica <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="drop-menu" id="drop-menu">
+            <button class="drop-item" onclick="exportExcel()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              Esporta Excel (.csv)
+            </button>
+            <div class="drop-divider"></div>
+            <button class="drop-item" onclick="exportPDF()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Esporta PDF (stampa)
+            </button>
+            <div class="drop-divider"></div>
+            <button class="drop-item" onclick="exportJSON()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Backup dati (.json)
+            </button>
+            <button class="drop-item" onclick="document.getElementById('import-json-input').click()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Ripristina da backup
+            </button>
+            <input type="file" id="import-json-input" accept=".json" style="display:none" onchange="importJSON(this)">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="openCocktailModal()">+ Nuovo</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="stats-row" id="stats-cocktail"></div>
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('grid',this)">Schede</button>
+        <button class="tab" onclick="switchTab('table',this)">Tabella</button>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" placeholder="Cerca cocktail..." id="search-cocktail" oninput="renderCocktail()">
+        <select class="filter" id="filter-cat" onchange="renderCocktail()">
+          <option value="">Tutte le categorie</option>
+        </select>
+      </div>
+      <div id="cocktail-grid" class="cards-grid"></div>
+      <div id="cocktail-table" class="table-wrap" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: CAFFETTERIA -->
+  <div id="page-caffetteria" class="page" style="display:none">
+    <div class="topbar" style="background:linear-gradient(135deg,#1A2E20,#0F1F15);border-bottom:2px solid #4CAF7D">
+      <div class="topbar-title" id="topbar-caffe-title">☕ Caffetteria</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="dropdown" id="dd-scarica-caffe">
+          <button class="btn btn-ghost" onclick="toggleDropCaffe()" style="display:flex;align-items:center;gap:6px;white-space:nowrap">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Scarica <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="drop-menu" id="drop-menu-caffe">
+            <button class="drop-item" onclick="exportCaffeExcel()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              Esporta Excel (.csv)
+            </button>
+            <div class="drop-divider"></div>
+            <button class="drop-item" onclick="exportCaffePDF()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Esporta PDF (stampa)
+            </button>
+            <div class="drop-divider"></div>
+            <button class="drop-item" onclick="exportJSON()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Backup dati (.json)
+            </button>
+            <button class="drop-item" onclick="document.getElementById('import-json-input').click()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Ripristina da backup
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="openCaffeModal()">+ Nuova Bevanda</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="stats-row" id="stats-caffe"></div>
+      <div class="tabs">
+        <button class="tab active" id="tab-caffe-grid" onclick="switchTabCaffe('grid',this)">Schede</button>
+        <button class="tab" id="tab-caffe-table" onclick="switchTabCaffe('table',this)">Tabella</button>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" placeholder="Cerca bevanda..." id="search-caffe" oninput="renderCaffe()">
+        <select class="filter" id="filter-caffe-cat" onchange="renderCaffe()">
+          <option value="">Tutte le categorie</option>
+        </select>
+      </div>
+      <div id="caffe-grid" class="cards-grid"></div>
+      <div id="caffe-table" class="table-wrap" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: INGREDIENTI CAFFETTERIA -->
+  <!-- PAGE: INGREDIENTI (UNIFICATA BAR + CAFFETTERIA) -->
+  <div id="page-ingredienti" class="page" style="display:none">
+    <div class="topbar">
+      <div class="topbar-title">🧪 Ingredienti</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="ing-tipo-sel" onchange="switchIngTipo(this.value)" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;cursor:pointer">
+          <option value="bar">🍸 Bar</option>
+          <option value="caffe">☕ Caffetteria</option>
+        </select>
+        <button class="btn btn-primary" id="btn-nuovo-ing" onclick="apriNuovoIng()">+ Nuovo</button>
+      </div>
+    </div>
+    <div class="content">
+      <!-- SEZIONE BAR -->
+      <div id="ing-section-bar">
+        <div class="stats-row" id="stats-ing" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px"></div>
+        <div class="search-bar">
+          <input class="search-input" placeholder="Cerca ingrediente bar..." id="search-ing" oninput="renderIngredienti()">
+          <select class="filter" id="filter-ing-cat" onchange="renderIngredienti()">
+            <option value="">Tutte le categorie</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th class="td-right">Prezzo acquisto</th>
+                <th class="td-right">Quantità</th>
+                <th class="td-right">Costo/unità</th>
+                <th class="td-center">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="ing-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- SEZIONE CAFFETTERIA -->
+      <div id="ing-section-caffe" style="display:none">
+        <div class="search-bar">
+          <input class="search-input" placeholder="Cerca ingrediente caffetteria..." id="search-ing-caffe" oninput="renderIngCaffe()">
+          <select class="filter" id="filter-ing-caffe-cat" onchange="renderIngCaffe()">
+            <option value="">Tutte le categorie</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th class="td-right">Prezzo acquisto</th>
+                <th class="td-right">Quantità</th>
+                <th class="td-right">Costo/unità</th>
+                <th class="td-center">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="ing-caffe-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: MENUS -->
+  <div id="page-menus" class="page" style="display:none">
+    <div class="topbar">
+      <div class="topbar-title">📋 I Miei Menu</div>
+      <button class="btn btn-primary" onclick="nuovoMenu()">+ Nuovo Menu</button>
+    </div>
+    <div class="content">
+      <div class="menus-grid" id="menus-grid"></div>
+    </div>
+  </div>
+  <!-- PAGE: ANALISI MENU -->
+  <div id="page-analisi" class="page" style="display:none">
+    <div class="topbar">
+      <div class="topbar-title">📊 Analisi Menu</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="analisi-sezione-sel" onchange="renderAnalisi()" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;cursor:pointer">
+          <option value="cocktail">🍸 Cocktail</option>
+          <option value="caffe">☕ Caffetteria</option>
+        </select>
+        <button class="btn btn-ghost" onclick="exportAnalisiExcelBar()" style="font-size:12px">⬇ Excel</button>
+        <button class="btn btn-ghost" onclick="exportAnalisiPDFBar()" style="font-size:12px">⬇ PDF</button>
+        <button class="btn btn-primary" onclick="salvaVenditeBar()">💾 Salva</button>
+      </div>
+    </div>
+    <div class="content">
+      <div id="analisi-stats-bar" class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;font-size:12px">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#4CAF7D;display:inline-block"></span>Eccellente: BC% ok + alto venduto</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#3399FF;display:inline-block"></span>Affidabile: BC% alto ma alto venduto</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#E89520;display:inline-block"></span>Potenziale: BC% ok ma poco venduto</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#E05252;display:inline-block"></span>Critico: BC% alto + poco venduto</span>
+      </div>
+      <div id="analisi-empty-bar" style="display:none;color:var(--muted);font-size:14px;text-align:center;padding:40px">
+        Nessuna voce nel menu attivo.
+      </div>
+      <div class="table-wrap" id="analisi-table-wrap-bar" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>Stato</th>
+              <th>Nome</th>
+              <th class="td-right">BC%</th>
+              <th class="td-right">Margine €</th>
+              <th class="td-right">Vendite/sett.</th>
+              <th class="td-right">Margine tot.</th>
+              <th class="td-right">Ricavo/sett.</th>
+              <th>Consiglio</th>
+            </tr>
+          </thead>
+          <tbody id="analisi-tbody-bar"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div><!-- /main -->
+
+<!-- MODAL: COCKTAIL -->
+<div class="overlay hidden" id="modal-cocktail">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-cocktail-title">Nuovo Cocktail</div>
+      <button class="btn-icon" onclick="closeModal('modal-cocktail')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-cocktail-id">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label>Nome cocktail</label>
+          <input type="text" id="c-nome" placeholder="es. Negroni">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="c-cat">
+            <option>Classici IBA</option>
+            <option>Aperitivi</option>
+            <option>Long Drink</option>
+            <option>Shot</option>
+            <option>Analcolici</option>
+            <option>Signature</option>
+            <option>Altro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prezzo di vendita (€)</label>
+          <input type="number" id="c-prezzo" placeholder="es. 9.00" step="0.10" min="0">
+        </div>
+        <div class="form-group form-full">
+          <label>Note / metodo</label>
+          <textarea id="c-note" placeholder="es. Stirrato, servito in tumbler con ghiaccio grosso..."></textarea>
+        </div>
+      </div>
+
+      <div class="ing-section">
+        <div class="ing-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          Ingredienti
+        </div>
+        <div class="ing-list" id="ing-list-modal"></div>
+        <button class="btn-add-ing" onclick="addIngRow()">+ Aggiungi ingrediente</button>
+      </div>
+
+      <div class="cost-preview" id="cost-preview">
+        <div>
+          <div class="preview-label">Costo drink</div>
+          <div class="preview-cost" id="preview-cost-val">€ 0.00</div>
+        </div>
+        <div style="text-align:right">
+          <div class="preview-label">Food Cost %</div>
+          <div class="preview-fc" id="preview-fc-val">—</div>
+        </div>
+      </div>
+      <div style="background:rgba(76,175,125,.07);border:1px solid rgba(76,175,125,.18);border-radius:8px;padding:12px 16px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:var(--muted)">Target beverage cost %</span>
+          <input type="number" id="target-fc" value="25" min="1" max="100" step="1" oninput="updateCostPreview()" style="width:60px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center">
+          <span style="font-size:12px;color:var(--muted)">%</span>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">💡 Prezzo suggerito</div>
+          <div style="font-size:20px;font-weight:700;color:var(--green)" id="preview-prezzo-suggerito">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cocktail')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveCocktail()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: INGREDIENTE -->
+<div class="overlay hidden" id="modal-ing">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-ing-title">Nuovo Ingrediente</div>
+      <button class="btn-icon" onclick="closeModal('modal-ing')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-ing-id">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label>Nome</label>
+          <input type="text" id="i-nome" placeholder="es. Gin Tanqueray">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="i-cat">
+            <option>Distillati</option>
+            <option>Liquori</option>
+            <option>Vini & Spumanti</option>
+            <option>Birre</option>
+            <option>Succhi & Sciroppi</option>
+            <option>Frutta & Verdura</option>
+            <option>Garnish</option>
+            <option>Soft Drink</option>
+            <option>Altro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Unità di misura</label>
+          <select id="i-unit">
+            <option value="cl">cl (centilitri)</option>
+            <option value="ml">ml (millilitri)</option>
+            <option value="pz">pz (pezzo)</option>
+            <option value="g">g (grammi)</option>
+            <option value="kg">kg (chilogrammi)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prezzo acquisto (€)</label>
+          <input type="number" id="i-prezzo" placeholder="es. 18.00" step="0.01" min="0" oninput="updateIngPreview()">
+        </div>
+        <div class="form-group">
+          <label>Quantità bottiglia/confezione</label>
+          <div class="input-group">
+            <input type="number" id="i-qty" placeholder="es. 70" step="0.01" min="0" oninput="updateIngPreview()">
+            <div class="input-suffix" id="i-unit-suffix">cl</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Costo per unità</label>
+          <input type="text" id="i-costo-unit" readonly placeholder="calcolato auto" style="color:var(--gold);font-weight:600">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-ing')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveIng()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETTAGLIO COCKTAIL -->
+<div class="overlay hidden" id="modal-view">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:28px" id="view-emoji"></div>
+        <div>
+          <div class="modal-title" id="view-nome"></div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px" id="view-cat"></div>
+        </div>
+      </div>
+      <button class="btn-icon" onclick="closeModal('modal-view')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="view-note" style="font-size:13px;color:var(--muted);margin-bottom:12px;font-style:italic"></div>
+      <div class="ing-section-title">Ingredienti</div>
+      <div class="view-ing-list" id="view-ing-list"></div>
+      <div class="divider"></div>
+      <div class="total-row">
+        <div class="total-label">Costo totale drink</div>
+        <div class="total-cost" id="view-total"></div>
+      </div>
+      <div class="fc-detail" id="view-fc-detail"></div>
+      <div style="background:rgba(76,175,125,.07);border:1px solid rgba(76,175,125,.18);border-radius:8px;padding:12px 16px;margin-top:10px" id="view-prezzo-suggerito-box"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-view')">Chiudi</button>
+      <button class="btn btn-primary" onclick="editFromView()">✏️ Modifica</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: BEVANDA CAFFETTERIA -->
+<div class="overlay hidden" id="modal-caffe">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-caffe-title">Nuova Bevanda</div>
+      <button class="btn-icon" onclick="closeModal('modal-caffe')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-caffe-id">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label>Nome bevanda</label>
+          <input type="text" id="cf-nome" placeholder="es. Cappuccino">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="cf-cat">
+            <option>☕ Caffetteria classica</option>
+            <option>🧋 Bevande fredde</option>
+            <option>🍫 Cioccolate & tisane</option>
+            <option>🥤 Estratti & succhi</option>
+            <option>Altro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prezzo di vendita (€)</label>
+          <input type="number" id="cf-prezzo" placeholder="es. 2.50" step="0.10" min="0" oninput="updateCaffePreview()">
+        </div>
+        <div class="form-group form-full">
+          <label>Note / preparazione</label>
+          <textarea id="cf-note" placeholder="es. Doppio espresso con latte montato a vapore..."></textarea>
+        </div>
+      </div>
+      <div class="ing-section">
+        <div class="ing-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/></svg>
+          Ingredienti caffetteria
+        </div>
+        <div class="ing-list" id="ing-caffe-list-modal"></div>
+        <button class="btn-add-ing" onclick="addIngCaffeRow()">+ Aggiungi ingrediente</button>
+      </div>
+      <div class="cost-preview" id="cost-preview-caffe">
+        <div>
+          <div class="preview-label">Costo bevanda</div>
+          <div class="preview-cost" id="preview-caffe-cost-val">€ 0.00</div>
+        </div>
+        <div style="text-align:right">
+          <div class="preview-label">Beverage Cost %</div>
+          <div class="preview-fc" id="preview-caffe-fc-val">—</div>
+        </div>
+      </div>
+      <div style="background:rgba(76,175,125,.07);border:1px solid rgba(76,175,125,.18);border-radius:8px;padding:12px 16px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:var(--muted)">Target BC %</span>
+          <input type="number" id="caffe-target-fc" value="25" min="1" max="100" step="1" oninput="updateCaffePreview()" style="width:60px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center">
+          <span style="font-size:12px;color:var(--muted)">%</span>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">💡 Prezzo suggerito</div>
+          <div style="font-size:20px;font-weight:700;color:var(--green)" id="preview-caffe-sug">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-caffe')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveCaffe()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: INGREDIENTE CAFFETTERIA -->
+<div class="overlay hidden" id="modal-ing-caffe">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-ing-caffe-title">Nuovo Ingrediente Caffetteria</div>
+      <button class="btn-icon" onclick="closeModal('modal-ing-caffe')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-ing-caffe-id">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label>Nome ingrediente</label>
+          <input type="text" id="ic-nome" placeholder="es. Caffè in grani">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="ic-cat">
+            <option>Caffè & Derivati</option>
+            <option>Latte & Derivati</option>
+            <option>Sciroppi & Aromi</option>
+            <option>Tisane & Tè</option>
+            <option>Frutta fresca</option>
+            <option>Cioccolato & Cacao</option>
+            <option>Altro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Unità di misura</label>
+          <select id="ic-unit">
+            <option value="g">g (grammi)</option>
+            <option value="ml">ml (millilitri)</option>
+            <option value="cl">cl (centilitri)</option>
+            <option value="pz">pz (pezzo)</option>
+            <option value="kg">kg (chilogrammi)</option>
+            <option value="lt">lt (litri)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prezzo acquisto (€)</label>
+          <input type="number" id="ic-prezzo" placeholder="es. 15.00" step="0.01" min="0" oninput="updateIngCaffePreview()">
+        </div>
+        <div class="form-group">
+          <label>Quantità confezione</label>
+          <input type="number" id="ic-qty" placeholder="es. 1000" step="0.01" min="0" oninput="updateIngCaffePreview()">
+        </div>
+        <div class="form-group">
+          <label>Costo per unità</label>
+          <input type="text" id="ic-costo-unit" readonly placeholder="calcolato auto" style="color:var(--gold);font-weight:600">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-ing-caffe')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveIngCaffe()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETTAGLIO BEVANDA CAFFETTERIA -->
+<div class="overlay hidden" id="modal-view-caffe">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:28px">☕</div>
+        <div>
+          <div class="modal-title" id="view-caffe-nome"></div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px" id="view-caffe-cat"></div>
+        </div>
+      </div>
+      <button class="btn-icon" onclick="closeModal('modal-view-caffe')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="view-caffe-note" style="font-size:13px;color:var(--muted);margin-bottom:12px;font-style:italic"></div>
+      <div class="ing-section-title">Ingredienti</div>
+      <div class="view-ing-list" id="view-caffe-ing-list"></div>
+      <div class="divider"></div>
+      <div class="total-row">
+        <div class="total-label">Costo totale bevanda</div>
+        <div class="total-cost" id="view-caffe-total"></div>
+      </div>
+      <div class="fc-detail" id="view-caffe-fc-detail"></div>
+      <div style="background:rgba(76,175,125,.07);border:1px solid rgba(76,175,125,.18);border-radius:8px;padding:12px 16px;margin-top:10px" id="view-caffe-sug-box"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-view-caffe')">Chiudi</button>
+      <button class="btn btn-primary" onclick="editFromViewCaffe()">✏️ Modifica</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV MOBILE -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bottom-nav-item active" id="bnav-cocktail" onclick="showPage('cocktail',this,'bnav-cocktail')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 22h8M12 11v11M3 3l9 8 9-8"/><path d="M5 3h14"/></svg>
+    Cocktail
+  </button>
+  <button class="bottom-nav-item" id="bnav-caffetteria" onclick="showPage('caffetteria',this,'bnav-caffetteria')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+    Caffetteria
+  </button>
+  <button class="bottom-nav-item" id="bnav-ingredienti" onclick="showPage('ingredienti',this,'bnav-ingredienti')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+    Ingredienti
+  </button>
+  <button class="bottom-nav-item" id="bnav-menus" onclick="showPage('menus',this,'bnav-menus')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Menu
+  </button>
+  <button class="bottom-nav-item" id="bnav-analisi" onclick="showPage('analisi',this,'bnav-analisi')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Analisi
+  </button>
+</nav>
+
+<script>
+/* ================================================================
+   SUPABASE CLIENT
+================================================================ */
+var _sb=null, _userId=null;
+
+async function sbInit(){
+  // Usa auth-guard se disponibile
+  if(window.FC360_SUPABASE){_sb=window.FC360_SUPABASE;}
+  else{
+    if(!window.supabase){console.error('Supabase non caricato');return false;}
+    _sb=window.supabase.createClient('https://lhzpueahpfpqkipwqlgk.supabase.co','sb_publishable_RcX37_4t0429HeaBRYs03w_C-53rBQV');
+  }
+  if(window.FC360_USER){_userId=window.FC360_USER.id;return true;}
+  // Fallback: leggi sessione direttamente
+  var s=await _sb.auth.getSession();
+  if(!s.data.session){
+    // Aspetta ancora un po' — auth-guard potrebbe essere lento
+    await new Promise(function(r){setTimeout(r,1000);});
+    s=await _sb.auth.getSession();
+  }
+  if(!s.data.session){window.location.replace('/app/dashboard.html');return false;}
+  _userId=s.data.session.user.id;
+  return true;
+}
+
+/* ── INGREDIENTI BAR ──────────────────────────────────────── */
+async function sbLoadIngBar(){
+  var res=await _sb.from('ingredienti_bar').select('*').eq('user_id',_userId).order('nome');
+  if(res.error){console.error('sbLoadIngBar',res.error);return[];}
+  return(res.data||[]).map(function(i){return{id:i.id,nome:i.nome,cat:i.cat||'',unit:i.unit||'cl',prezzo:parseFloat(i.prezzo)||0,qty:parseFloat(i.qty)||1};});
+}
+async function sbUpsertIngBar(obj){
+  var row={id:obj.id,user_id:_userId,nome:obj.nome,cat:obj.cat||'',unit:obj.unit||'cl',prezzo:obj.prezzo||0,qty:obj.qty||1};
+  var res=await _sb.from('ingredienti_bar').upsert([row]);
+  if(res.error)console.error('sbUpsertIngBar',res.error);
+}
+async function sbDeleteIngBar(id){await _sb.from('ingredienti_bar').delete().eq('id',id).eq('user_id',_userId);}
+
+/* ── MENU BAR ─────────────────────────────────────────────── */
+async function sbGetMenusBar(){
+  var res=await _sb.from('menu').select('*').eq('user_id',_userId).eq('tipo','bar').order('created_at');
+  if(res.error){console.error('sbGetMenusBar',res.error);return[];}
+  return(res.data||[]).map(function(m){return{id:m.id,nome:m.nome,data:m.data||''};});
+}
+async function sbSaveMenuBar(obj){
+  await _sb.from('menu').upsert([{id:obj.id,user_id:_userId,nome:obj.nome,data:obj.data||'',tipo:'bar'}]);
+}
+async function sbDeleteMenuBar(mid){await _sb.from('menu').delete().eq('id',mid).eq('user_id',_userId);}
+
+/* ── COCKTAIL ─────────────────────────────────────────────── */
+async function sbLoadCoc(mid){
+  var res=await _sb.from('cocktail').select('*, cocktail_ingredienti(*)').eq('user_id',_userId).eq('menu_id',mid);
+  if(res.error){console.error('sbLoadCoc',res.error);return[];}
+  return(res.data||[]).map(function(c){
+    return{id:c.id,nome:c.nome,cat:c.cat||'',tipo:c.tipo||'cocktail',prezzo:parseFloat(c.prezzo)||0,
+      note:c.note||'',vendite:parseInt(c.vendite)||0,
+      ingredienti:(c.cocktail_ingredienti||[]).map(function(ci){return{id:ci.ingrediente_id,qty:parseFloat(ci.qty)||0,unit:ci.unit||'cl'};})};
+  });
+}
+async function sbSaveCoc(mid,obj){
+  await _sb.from('cocktail').upsert([{id:obj.id,user_id:_userId,menu_id:mid,nome:obj.nome,cat:obj.cat||'',
+    tipo:obj.tipo||'cocktail',prezzo:obj.prezzo||0,note:obj.note||'',vendite:obj.vendite||0}]);
+  await _sb.from('cocktail_ingredienti').delete().eq('cocktail_id',obj.id);
+  if(obj.ingredienti&&obj.ingredienti.length>0){
+    var ings=obj.ingredienti.map(function(i){return{cocktail_id:obj.id,ingrediente_id:i.id,qty:i.qty||0,unit:i.unit||'cl'};});
+    var r=await _sb.from('cocktail_ingredienti').insert(ings);
+    if(r.error)console.error('sbSaveCoc-ings',r.error);
+  }
+}
+async function sbDeleteCoc(id){
+  await _sb.from('cocktail_ingredienti').delete().eq('cocktail_id',id);
+  await _sb.from('cocktail').delete().eq('id',id).eq('user_id',_userId);
+}
+async function sbDeleteCocMenu(mid){
+  var res=await _sb.from('cocktail').select('id').eq('user_id',_userId).eq('menu_id',mid);
+  if(res.data)for(var i=0;i<res.data.length;i++)await _sb.from('cocktail_ingredienti').delete().eq('cocktail_id',res.data[i].id);
+  await _sb.from('cocktail').delete().eq('user_id',_userId).eq('menu_id',mid);
+}
+async function sbSetVenditeBar(id,val){
+  await _sb.from('cocktail').update({vendite:parseInt(val)||0}).eq('id',id).eq('user_id',_userId);
+}
+
+/* ── SHIM: compatibilità chiamate sync ───────────────────── */
+var _menusCache=[], cocktail=[], ingredienti=[], ingredientiCaffe=[], currentMenuId=null;
+function ld(k,d){return d;}
+function sd(k,v){}
+function ldCoc(mid){return mid===currentMenuId?cocktail:[];}
+function sdCoc(mid,list){if(mid===currentMenuId)cocktail=list;}
+function getMenus(){return _menusCache;}
+function saveMenus(l){_menusCache=l;}
+
+/* ── DEFAULT DATA ─────────────────────────────────────────── */
+var DEFAULT_ING=[
+  {id:'i1',nome:'Gin (London Dry)',cat:'Distillati',unit:'cl',prezzo:16,qty:70},
+  {id:'i2',nome:'Vodka',cat:'Distillati',unit:'cl',prezzo:13,qty:70},
+  {id:'i3',nome:'Rum Bianco',cat:'Distillati',unit:'cl',prezzo:13,qty:70},
+  {id:'i4',nome:'Rum Scuro',cat:'Distillati',unit:'cl',prezzo:14,qty:70},
+  {id:'i5',nome:'Tequila',cat:'Distillati',unit:'cl',prezzo:15,qty:70},
+  {id:'i6',nome:'Bourbon Whiskey',cat:'Distillati',unit:'cl',prezzo:18,qty:70},
+  {id:'i7',nome:'Campari',cat:'Liquori',unit:'cl',prezzo:14,qty:100},
+  {id:'i8',nome:'Vermouth Rosso',cat:'Liquori',unit:'cl',prezzo:8,qty:100},
+  {id:'i9',nome:'Vermouth Dry',cat:'Liquori',unit:'cl',prezzo:8,qty:75},
+  {id:'i10',nome:'Triple Sec / Cointreau',cat:'Liquori',unit:'cl',prezzo:16,qty:70},
+  {id:'i11',nome:'Aperol',cat:'Liquori',unit:'cl',prezzo:10,qty:100},
+  {id:'i12',nome:'Kahlua',cat:'Liquori',unit:'cl',prezzo:15,qty:70},
+  {id:'i13',nome:'Prosecco',cat:'Vini & Spumanti',unit:'cl',prezzo:5,qty:75},
+  {id:'i14',nome:'Champagne',cat:'Vini & Spumanti',unit:'cl',prezzo:25,qty:75},
+  {id:'i15',nome:'Succo di Limone',cat:'Succhi & Sciroppi',unit:'cl',prezzo:2,qty:100},
+  {id:'i16',nome:'Succo di Lime',cat:'Succhi & Sciroppi',unit:'cl',prezzo:2.5,qty:100},
+  {id:'i17',nome:'Succo di Arancia',cat:'Succhi & Sciroppi',unit:'cl',prezzo:1.8,qty:100},
+  {id:'i18',nome:'Succo di Ananas',cat:'Succhi & Sciroppi',unit:'cl',prezzo:1.5,qty:100},
+  {id:'i19',nome:'Sciroppo di Zucchero',cat:'Succhi & Sciroppi',unit:'cl',prezzo:3,qty:100},
+  {id:'i20',nome:'Granatina',cat:'Succhi & Sciroppi',unit:'cl',prezzo:4,qty:70},
+  {id:'i21',nome:'Menta (foglie)',cat:'Frutta & Verdura',unit:'pz',prezzo:0.8,qty:20},
+  {id:'i22',nome:'Lime (frutto)',cat:'Frutta & Verdura',unit:'pz',prezzo:0.4,qty:1},
+  {id:'i23',nome:'Limone (frutto)',cat:'Frutta & Verdura',unit:'pz',prezzo:0.25,qty:1},
+  {id:'i24',nome:'Arancia (frutto)',cat:'Frutta & Verdura',unit:'pz',prezzo:0.3,qty:1},
+  {id:'i25',nome:'Oliva (garnish)',cat:'Garnish',unit:'pz',prezzo:1.2,qty:10},
+  {id:'i26',nome:'Ciliegia Maraschino',cat:'Garnish',unit:'pz',prezzo:0.2,qty:1},
+  {id:'i27',nome:'Coca-Cola',cat:'Soft Drink',unit:'cl',prezzo:2,qty:33},
+  {id:'i28',nome:'Ginger Beer',cat:'Soft Drink',unit:'cl',prezzo:2.8,qty:25},
+  {id:'i29',nome:'Acqua Tonica',cat:'Soft Drink',unit:'cl',prezzo:1.8,qty:20},
+  {id:'i30',nome:'Soda Water',cat:'Soft Drink',unit:'cl',prezzo:0.5,qty:100},
+  {id:'i31',nome:'Crema di Cocco',cat:'Succhi & Sciroppi',unit:'cl',prezzo:3.5,qty:40},
+  {id:'i32',nome:'Tabasco',cat:'Altro',unit:'pz',prezzo:3,qty:60},
+  {id:'i33',nome:'Worcestershire',cat:'Altro',unit:'pz',prezzo:2.5,qty:60},
+  {id:'i34',nome:'Sale (bordo)',cat:'Garnish',unit:'pz',prezzo:0.05,qty:1},
+  {id:'i35',nome:'Uovo (albume)',cat:'Altro',unit:'pz',prezzo:0.2,qty:1},
+  {id:'i36',nome:'Blue Curacao',cat:'Liquori',unit:'cl',prezzo:12,qty:70},
+  {id:'i37',nome:'Midori (melone)',cat:'Liquori',unit:'cl',prezzo:14,qty:70},
+  {id:'i38',nome:'Baileys',cat:'Liquori',unit:'cl',prezzo:13,qty:100}
+];
+
+var DEFAULT_COC=[
+  {id:'c1',nome:'Negroni',cat:'Classici IBA',prezzo:9,note:'Stirrato, rocks glass, scorza arancia.',ingredienti:[{id:'i1',qty:3},{id:'i7',qty:3},{id:'i8',qty:3},{id:'i25',qty:1}]},
+  {id:'c2',nome:'Spritz Aperol',cat:'Aperitivi',prezzo:7,note:'3-2-1. Calice con ghiaccio.',ingredienti:[{id:'i11',qty:6},{id:'i13',qty:9},{id:'i30',qty:3},{id:'i26',qty:1}]},
+  {id:'c3',nome:'Mojito',cat:'Classici IBA',prezzo:8,note:'Pestato. Top con soda.',ingredienti:[{id:'i3',qty:5},{id:'i15',qty:3},{id:'i19',qty:2},{id:'i21',qty:8},{id:'i22',qty:0.5},{id:'i30',qty:10}]},
+  {id:'c4',nome:'Margarita',cat:'Classici IBA',prezzo:9,note:'Shakerato. Coppa con bordo di sale.',ingredienti:[{id:'i5',qty:5},{id:'i10',qty:2},{id:'i16',qty:2},{id:'i34',qty:1}]},
+  {id:'c5',nome:'Cosmopolitan',cat:'Classici IBA',prezzo:9,note:'Shakerato. Coppa cocktail.',ingredienti:[{id:'i2',qty:4},{id:'i10',qty:1.5},{id:'i16',qty:1},{id:'i20',qty:1}]},
+  {id:'c6',nome:'Old Fashioned',cat:'Classici IBA',prezzo:10,note:'Stirrato con zucchero e Angostura.',ingredienti:[{id:'i6',qty:6},{id:'i19',qty:1},{id:'i26',qty:1}]},
+  {id:'c7',nome:'Daiquiri',cat:'Classici IBA',prezzo:8,note:'Shakerato. Coppetta fredda.',ingredienti:[{id:'i3',qty:5},{id:'i16',qty:2.5},{id:'i19',qty:1.5}]},
+  {id:'c8',nome:'Moscow Mule',cat:'Long Drink',prezzo:8,note:'Mug di rame con ghiaccio.',ingredienti:[{id:'i2',qty:5},{id:'i16',qty:1.5},{id:'i28',qty:12}]},
+  {id:'c9',nome:'Gin & Tonic',cat:'Long Drink',prezzo:7,note:'Calice con ghiaccio.',ingredienti:[{id:'i1',qty:5},{id:'i29',qty:15}]},
+  {id:'c10',nome:'Pina Colada',cat:'Classici IBA',prezzo:9,note:'Blendato con ghiaccio.',ingredienti:[{id:'i3',qty:5},{id:'i31',qty:3},{id:'i18',qty:9}]},
+  {id:'c11',nome:'Sex on the Beach',cat:'Long Drink',prezzo:8,note:'Shakerato con ghiaccio.',ingredienti:[{id:'i2',qty:4},{id:'i37',qty:2},{id:'i17',qty:8},{id:'i20',qty:2}]},
+  {id:'c12',nome:'Tequila Sunrise',cat:'Long Drink',prezzo:8,note:'Granatina versata piano.',ingredienti:[{id:'i5',qty:5},{id:'i17',qty:10},{id:'i20',qty:1}]},
+  {id:'c13',nome:'Espresso Martini',cat:'Classici IBA',prezzo:10,note:'Shake vigoroso con espresso.',ingredienti:[{id:'i2',qty:5},{id:'i12',qty:2},{id:'i19',qty:1}]},
+  {id:'c14',nome:'Bloody Mary',cat:'Aperitivi',prezzo:9,note:'Rollato. Bicchiere alto.',ingredienti:[{id:'i2',qty:5},{id:'i17',qty:12},{id:'i32',qty:1},{id:'i33',qty:1},{id:'i15',qty:1},{id:'i34',qty:1}]},
+  {id:'c15',nome:'Americano',cat:'Aperitivi',prezzo:7,note:'Tumbler con ghiaccio e soda.',ingredienti:[{id:'i7',qty:3},{id:'i8',qty:3},{id:'i30',qty:6}]}
+];
+
+/* ── STATE ────────────────────────────────────────────────── */
+var ingredienti=[];
+var cocktail=[];
+var ingredientiCaffe=[];
+var caffe=[];
+var currentMenuId=null;
+var currentViewId=null;
+var currentViewCaffeId=null;
+var currentTab='grid';
+var currentTabCaffe='grid';
+
+/* ── DEFAULT INGREDIENTI CAFFETTERIA ──────────────────────── */
+var DEFAULT_ING_CAFFE=[
+  {id:'ic1',nome:'Caffè in grani',cat:'Caffè & Derivati',unit:'g',prezzo:22,qty:1000},
+  {id:'ic2',nome:'Caffè macinato espresso',cat:'Caffè & Derivati',unit:'g',prezzo:18,qty:1000},
+  {id:'ic3',nome:'Latte intero',cat:'Latte & Derivati',unit:'ml',prezzo:1.20,qty:1000},
+  {id:'ic4',nome:'Latte di soia',cat:'Latte & Derivati',unit:'ml',prezzo:2.20,qty:1000},
+  {id:'ic5',nome:'Latte d\'avena',cat:'Latte & Derivati',unit:'ml',prezzo:2.50,qty:1000},
+  {id:'ic6',nome:'Panna montata',cat:'Latte & Derivati',unit:'ml',prezzo:3.00,qty:500},
+  {id:'ic7',nome:'Cacao in polvere',cat:'Cioccolato & Cacao',unit:'g',prezzo:8.00,qty:250},
+  {id:'ic8',nome:'Cioccolato fondente',cat:'Cioccolato & Cacao',unit:'g',prezzo:10.00,qty:500},
+  {id:'ic9',nome:'Sciroppo di vaniglia',cat:'Sciroppi & Aromi',unit:'ml',prezzo:6.00,qty:700},
+  {id:'ic10',nome:'Sciroppo di caramello',cat:'Sciroppi & Aromi',unit:'ml',prezzo:6.00,qty:700},
+  {id:'ic11',nome:'Sciroppo di nocciola',cat:'Sciroppi & Aromi',unit:'ml',prezzo:6.00,qty:700},
+  {id:'ic12',nome:'Sciroppo di menta',cat:'Sciroppi & Aromi',unit:'ml',prezzo:5.50,qty:700},
+  {id:'ic13',nome:'Tè nero (bustina)',cat:'Tisane & Tè',unit:'pz',prezzo:0.12,qty:1},
+  {id:'ic14',nome:'Tè verde (bustina)',cat:'Tisane & Tè',unit:'pz',prezzo:0.15,qty:1},
+  {id:'ic15',nome:'Tisana camomilla',cat:'Tisane & Tè',unit:'pz',prezzo:0.10,qty:1},
+  {id:'ic16',nome:'Tisana frutti di bosco',cat:'Tisane & Tè',unit:'pz',prezzo:0.12,qty:1},
+  {id:'ic17',nome:'Zucchero semolato',cat:'Altro',unit:'g',prezzo:1.00,qty:1000},
+  {id:'ic18',nome:'Zucchero di canna',cat:'Altro',unit:'g',prezzo:1.80,qty:1000},
+  {id:'ic19',nome:'Banana',cat:'Frutta fresca',unit:'pz',prezzo:0.30,qty:1},
+  {id:'ic20',nome:'Fragole',cat:'Frutta fresca',unit:'g',prezzo:4.00,qty:500},
+  {id:'ic21',nome:'Mango',cat:'Frutta fresca',unit:'pz',prezzo:1.20,qty:1},
+  {id:'ic22',nome:'Ananas',cat:'Frutta fresca',unit:'pz',prezzo:1.50,qty:1},
+  {id:'ic23',nome:'Menta fresca',cat:'Frutta fresca',unit:'pz',prezzo:0.80,qty:20},
+  {id:'ic24',nome:'Succo d\'arancia fresco',cat:'Frutta fresca',unit:'ml',prezzo:2.50,qty:200},
+  {id:'ic25',nome:'Acqua calda',cat:'Altro',unit:'ml',prezzo:0.00,qty:1000}
+];
+
+var DEFAULT_CAFFE=[
+  {id:'cf1',nome:'Espresso',cat:'☕ Caffetteria classica',prezzo:1.20,note:'Dose standard 7g, 25ml.',ingredienti:[{id:'ic1',qty:7}]},
+  {id:'cf2',nome:'Cappuccino',cat:'☕ Caffetteria classica',prezzo:1.50,note:'Espresso con latte montato a vapore.',ingredienti:[{id:'ic1',qty:7},{id:'ic3',qty:150}]},
+  {id:'cf3',nome:'Latte Macchiato',cat:'☕ Caffetteria classica',prezzo:2.00,note:'Latte caldo con macchia di caffè.',ingredienti:[{id:'ic1',qty:7},{id:'ic3',qty:200}]},
+  {id:'cf4',nome:'Caffè Americano',cat:'☕ Caffetteria classica',prezzo:1.50,note:'Espresso allungato con acqua calda.',ingredienti:[{id:'ic1',qty:7},{id:'ic25',qty:150}]},
+  {id:'cf5',nome:'Cioccolata calda',cat:'🍫 Cioccolate & tisane',prezzo:3.00,note:'Cioccolato fondente sciolto con latte.',ingredienti:[{id:'ic8',qty:50},{id:'ic3',qty:200}]},
+  {id:'cf6',nome:'Frappé al caffè',cat:'🧋 Bevande fredde',prezzo:3.50,note:'Caffè shakerato con ghiaccio e latte.',ingredienti:[{id:'ic1',qty:14},{id:'ic3',qty:100},{id:'ic17',qty:10}]},
+  {id:'cf7',nome:'Smoothie Banana e Fragole',cat:'🥤 Estratti & succhi',prezzo:4.00,note:'Frullato fresco con frutta di stagione.',ingredienti:[{id:'ic19',qty:1},{id:'ic20',qty:100},{id:'ic3',qty:100}]},
+  {id:'cf8',nome:'Tè Verde con Menta',cat:'🍫 Cioccolate & tisane',prezzo:2.50,note:'Tè verde in infusione con foglie di menta fresca.',ingredienti:[{id:'ic14',qty:1},{id:'ic23',qty:5},{id:'ic25',qty:250}]}
+];
+
+/* ── STORAGE CAFFETTERIA ──────────────────────────────────── */
+function ldCaffe(mid){ return caffe; }
+function sdCaffe(mid,list){ caffe=list; }
+
+/* ── INIT ─────────────────────────────────────────────────── */
+async function init(){
+  var loading=document.getElementById('fc360-loading');
+  if(loading)loading.style.display='flex';
+  try{
+    var ok=await sbInit();
+    if(!ok)return;
+    ingredienti=await sbLoadIngBar();
+    if(ingredienti.length===0){
+      var defCopy=DEFAULT_ING.map(function(i){return Object.assign({},i,{id:'ib_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)});});
+      for(var k=0;k<defCopy.length;k++){await sbUpsertIngBar(defCopy[k]);await new Promise(function(r){setTimeout(r,30);});}
+      ingredienti=await sbLoadIngBar();
+    }
+    ingredientiCaffe=ingredienti.filter(function(i){return i.cat&&i.cat.toLowerCase().includes('caffe');});
+    if(ingredientiCaffe.length===0) ingredientiCaffe=DEFAULT_ING_CAFFE;
+    var menus=await sbGetMenusBar();
+    if(menus.length===0){
+      var m={id:'mb_'+Date.now(),nome:'Menu Bar',data:new Date().toLocaleDateString('it-IT')};
+      await sbSaveMenuBar(m);
+      menus=[m];
+      for(var j=0;j<DEFAULT_COC.length;j++){
+        var c=Object.assign({},DEFAULT_COC[j],{id:'c_'+Date.now()+'_'+j,tipo:'cocktail'});
+        await sbSaveCoc(m.id,c);
+        await new Promise(function(r){setTimeout(r,30);});
+      }
+    }
+    currentMenuId=menus[0].id;
+    _menusCache=menus;
+    var tuttiInit=await sbLoadCoc(currentMenuId);
+    cocktail=tuttiInit.filter(function(c){return c.tipo!=='caffe';});
+    caffe=tuttiInit.filter(function(c){return c.tipo==='caffe';});
+    buildMenuSel(menus);
+    renderCocktail();
+    renderCaffe();
+  }catch(err){
+    console.error('Init error:',err);
+    var loading=document.getElementById('fc360-loading');
+    if(loading)loading.innerHTML='<p style="color:#E05252">Errore: '+err.message+'</p>';
+    return;
+  }
+  var loading=document.getElementById('fc360-loading');
+  if(loading){loading.style.display='none';loading.classList.add('hidden');}
+}
+
+async function buildMenuSel(menus){
+  if(!menus)menus=await sbGetMenusBar();
+  var sel=document.getElementById('menu-select');
+  if(!sel)return;
+  sel.innerHTML=menus.map(function(m){
+    return '<option value="'+m.id+'"'+(m.id===currentMenuId?' selected':'')+'>'+m.nome+'</option>';
+  }).join('');
+}
+
+function switchMenu(mid){
+  currentMenuId=mid;
+  sd('fcbar_active',mid);
+  cocktail=ldCoc(mid);
+  caffe=ldCaffe(mid);
+  buildMenuSel();
+  renderCocktail();
+}
+
+async function nuovoMenu(){
+  var nome=prompt('Nome del nuovo menu (es. Menu Estivo):');
+  if(!nome||!nome.trim())return;
+  var mid='m'+Date.now();
+  var menus=getMenus();
+  menus.push({id:mid,nome:nome.trim(),data:new Date().toLocaleDateString('it-IT')});
+  saveMenus(menus);
+  sdCoc(mid,[]);
+  switchMenu(mid);
+  buildMenuSel();
+  renderMenus();
+}
+
+function duplicaMenu(mid){
+  var menus=getMenus();
+  var orig=menus.find(function(m){return m.id===mid;});
+  if(!orig)return;
+  var nome=prompt('Nome del menu duplicato:',orig.nome+' (copia)');
+  if(!nome||!nome.trim())return;
+  var newId='m'+Date.now();
+  menus.push({id:newId,nome:nome.trim(),data:new Date().toLocaleDateString('it-IT')});
+  saveMenus(menus);
+  var copia=ldCoc(mid).map(function(c){return Object.assign({},c,{id:'c'+Math.random().toString(36).slice(2,9)});});
+  sdCoc(newId,copia);
+  buildMenuSel();
+  renderMenus();
+}
+
+function rinominaMenu(mid){
+  var menus=getMenus();
+  var m=menus.find(function(x){return x.id===mid;});
+  if(!m)return;
+  var nome=prompt('Nuovo nome:',m.nome);
+  if(!nome||!nome.trim())return;
+  m.nome=nome.trim();
+  saveMenus(menus);
+  buildMenuSel();
+  renderMenus();
+}
+
+async function eliminaMenu(mid){
+  var menus=getMenus();
+  if(menus.length<=1){alert('Non puoi eliminare il solo menu.');return;}
+  var m=menus.find(function(x){return x.id===mid;});
+  if(!confirm('Eliminare "'+m.nome+'" e tutti i suoi cocktail?'))return;
+
+  var nuovi=menus.filter(function(x){return x.id!==mid;});
+  saveMenus(nuovi);
+  if(currentMenuId===mid)switchMenu(nuovi[0].id);
+  buildMenuSel();
+  renderMenus();
+}
+
+function renderMenus(){
+  var menus=getMenus();
+  var grid=document.getElementById('menus-grid');
+  if(!grid)return;
+  grid.innerHTML=menus.map(function(m){
+    var cocs=ldCoc(m.id);
+    var isActive=m.id===currentMenuId;
+    var totCosto=cocs.reduce(function(s,c){return s+costoDrink(c);},0);
+    var avg=cocs.length?totCosto/cocs.length:0;
+    return '<div class="menu-card'+(isActive?' is-active':'')+'">'+
+      '<div class="menu-card-top"><div class="menu-card-name">'+m.nome+'</div>'+
+      (isActive?'<span class="menu-active-tag">Attivo</span>':'')+
+      '</div>'+
+      '<div class="menu-card-date">Creato: '+m.data+'</div>'+
+      '<div class="menu-card-stats">'+
+        '<div class="menu-card-stat"><strong>'+cocs.length+'</strong>cocktail</div>'+
+        '<div class="menu-card-stat"><strong>'+fmt(avg)+'</strong>costo medio</div>'+
+      '</div>'+
+      '<div class="menu-card-btns">'+
+        (!isActive?'<button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="attivaMenu(\''+m.id+'\')">Usa</button>':
+                   '<button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;cursor:default" disabled>In uso</button>')+
+        '<button class="btn btn-ghost" style="font-size:12px;padding:6px 10px" onclick="duplicaMenu(\''+m.id+'\')">Duplica</button>'+
+        '<button class="btn btn-ghost" style="font-size:12px;padding:6px 10px" onclick="rinominaMenu(\''+m.id+'\')">Rinomina</button>'+
+        (menus.length>1?'<button class="btn btn-ghost" style="font-size:12px;padding:6px 10px;color:var(--red)" onclick="eliminaMenu(\''+m.id+'\')">Elimina</button>':'')+
+      '</div></div>';
+  }).join('');
+}
+
+function attivaMenu(mid){
+  switchMenu(mid);
+  buildMenuSel();
+  showPage('cocktail',document.getElementById('nav-cocktail'));
+}
+
+/* ── UTILS ────────────────────────────────────────────────── */
+function uid(){ return 'x'+Math.random().toString(36).slice(2,9); }
+function fmt(v){ return 'EUR '+parseFloat(v||0).toFixed(2); }
+
+function costoUnitario(ing){
+  if(!ing||!ing.qty||!ing.prezzo)return 0;
+  return ing.prezzo/ing.qty;
+}
+function costoDrink(c){
+  var tot=0;
+  (c.ingredienti||[]).forEach(function(r){
+    var ing=ingredienti.find(function(i){return i.id===r.id;});
+    if(ing)tot+=costoUnitario(ing)*(parseFloat(r.qty)||0);
+  });
+  return tot;
+}
+function fcPercent(c){
+  var costo=costoDrink(c),prezzo=parseFloat(c.prezzo);
+  if(!prezzo||!costo)return null;
+  return (costo/prezzo)*100;
+}
+function fcBadgeClass(fc){
+  if(fc===null)return '';
+  if(fc<=25)return 'fc-green';
+  if(fc<=35)return 'fc-orange';
+  return 'fc-red';
+}
+function catEmoji(cat){
+  var m={'Classici IBA':'🍸','Aperitivi':'🥂','Long Drink':'🥤','Shot':'🥃','Analcolici':'🍹','Signature':'⭐','Pestati':'🌿','Frozen':'🧊','Sour':'🍋','Altro':'🍶'};
+  return m[cat]||'🍹';
+}
+
+/* ── PAGES ────────────────────────────────────────────────── */
+function showPage(p,el,bnavId){
+  document.querySelectorAll('.page').forEach(function(pg){pg.style.display='none';});
+  var target=document.getElementById('page-'+p);
+  if(!target)return;
+  target.style.display='flex';
+  target.style.flexDirection='column';
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var sideEl=document.getElementById('nav-'+p);
+  if(sideEl)sideEl.classList.add('active');
+  else if(el&&el.classList&&el.classList.contains('nav-item'))el.classList.add('active');
+  document.querySelectorAll('.bottom-nav-item').forEach(function(n){n.classList.remove('active');});
+  var bEl=bnavId?document.getElementById(bnavId):document.getElementById('bnav-'+p);
+  if(bEl)bEl.classList.add('active');
+  if(p==='cocktail')renderCocktail();
+  if(p==='ingredienti'){renderIngredienti();renderIngCaffe();}
+  if(p==='menus')renderMenus();
+  if(p==='caffetteria')renderCaffe();
+  if(p==='analisi')renderAnalisi();
+}
+
+var currentIngTipo='bar';
+
+function switchIngTipo(tipo){
+  currentIngTipo=tipo;
+  document.getElementById('ing-section-bar').style.display=tipo==='bar'?'block':'none';
+  document.getElementById('ing-section-caffe').style.display=tipo==='caffe'?'block':'none';
+}
+
+/* ================================================================
+   ANALISI MENU BAR
+================================================================ */
+function getVenditeBar(id){
+  var c=cocktail.find(function(x){return x.id===id;});return c?parseInt(c.vendite)||0:0;
+}
+function setVenditeBar(id,val){
+  cocktail=cocktail.map(function(c){if(c.id===id)c.vendite=parseInt(val)||0;return c;});
+  sbSetVenditeBar(id,val);
+}
+
+function salvaVenditeBar(){
+  document.querySelectorAll('#analisi-tbody-bar .vendite-input').forEach(function(inp){
+    if(inp.dataset.rid)setVenditeBar(inp.dataset.rid,inp.value);
+  });
+  renderAnalisi();
+  var btn=document.querySelector('[onclick="salvaVenditeBar()"]');
+  if(btn){var t=btn.textContent;btn.textContent='✓ Salvato!';setTimeout(function(){btn.textContent=t;},1500);}
+}
+
+function classificaVoce(bc,vendite,mediaVendite,bcSoglia){
+  var alto=vendite>=mediaVendite;
+  var ok=bc!==null&&bc<=bcSoglia;
+  if(ok&&alto)return 'eccellente';
+  if(!ok&&alto)return 'affidabile';
+  if(ok&&!alto)return 'potenziale';
+  return 'critico';
+}
+
+function statoHtmlBar(s){
+  var map={
+    eccellente:'<span class="stato-badge stato-eccellente">🟢 Eccellente</span>',
+    affidabile:'<span class="stato-badge stato-affidabile">🔵 Affidabile</span>',
+    potenziale:'<span class="stato-badge stato-potenziale">🟡 Potenziale</span>',
+    critico:   '<span class="stato-badge stato-critico">🔴 Critico</span>'
+  };
+  return map[s]||'';
+}
+
+function consiglioTestoBar(s){
+  var map={
+    eccellente:'Mantieni in carta e valorizza',
+    affidabile:'Ottimizza il costo ingredienti',
+    potenziale:'Promuovi e spingi le vendite',
+    critico:   'Rivedi prezzo o rimuovi'
+  };
+  return map[s]||'';
+}
+
+function renderAnalisi(){
+  var sezione=(document.getElementById('analisi-sezione-sel')||{}).value||'cocktail';
+  var lista=sezione==='cocktail'?cocktail:caffe;
+  var emptyEl=document.getElementById('analisi-empty-bar');
+  var tableWrap=document.getElementById('analisi-table-wrap-bar');
+  var statsEl=document.getElementById('analisi-stats-bar');
+  var tbody=document.getElementById('analisi-tbody-bar');
+
+  if(!lista||!lista.length){
+    if(emptyEl)emptyEl.style.display='block';
+    if(tableWrap)tableWrap.style.display='none';
+    if(statsEl)statsEl.innerHTML='';
+    return;
+  }
+  if(emptyEl)emptyEl.style.display='none';
+  if(tableWrap)tableWrap.style.display='block';
+
+  var dati=lista.map(function(c){
+    var costo=sezione==='cocktail'?costoDrink(c):costoBevanda(c);
+    var bc=c.prezzo>0?(costo/c.prezzo)*100:null;
+    var prezzo=parseFloat(c.prezzo)||0;
+    var margine=prezzo>0?prezzo-costo:null;
+    var vendite=getVenditeBar(c.id);
+    return {c:c,costo:costo,bc:bc,prezzo:prezzo,margine:margine,vendite:vendite};
+  });
+
+  var mediaVendite=dati.reduce(function(s,d){return s+d.vendite;},0)/dati.length;
+  var bcValidi=dati.filter(function(d){return d.bc!==null;});
+  var bcSoglia=bcValidi.length?bcValidi.reduce(function(s,d){return s+d.bc;},0)/bcValidi.length:25;
+
+  dati.forEach(function(d){
+    d.stato=classificaVoce(d.bc,d.vendite,mediaVendite,bcSoglia);
+    d.margineTot=d.margine!==null?d.margine*d.vendite:null;
+    d.ricavoTot=d.prezzo>0?d.prezzo*d.vendite:null;
+  });
+
+  var ordine={eccellente:0,affidabile:1,potenziale:2,critico:3};
+  dati.sort(function(a,b){return ordine[a.stato]-ordine[b.stato];});
+
+  var cnt={eccellente:0,affidabile:0,potenziale:0,critico:0};
+  dati.forEach(function(d){cnt[d.stato]++;});
+
+  if(statsEl){
+    statsEl.innerHTML=
+      '<div class="stat-card"><div class="stat-value" style="color:#4CAF7D">'+cnt.eccellente+'</div><div class="stat-label">🟢 Eccellenti</div></div>'+
+      '<div class="stat-card"><div class="stat-value" style="color:#3399FF">'+cnt.affidabile+'</div><div class="stat-label">🔵 Affidabili</div></div>'+
+      '<div class="stat-card"><div class="stat-value" style="color:#E89520">'+cnt.potenziale+'</div><div class="stat-label">🟡 Potenziali</div></div>'+
+      '<div class="stat-card"><div class="stat-value" style="color:#E05252">'+cnt.critico+'</div><div class="stat-label">🔴 Critici</div></div>';
+  }
+
+  if(tbody){
+    var bcBadge=function(bc){
+      if(bc===null)return '—';
+      var cls=bc<=25?'fc-green':bc<=35?'fc-orange':'fc-red';
+      return '<span class="fc-badge '+cls+'">'+bc.toFixed(1)+'%</span>';
+    };
+    tbody.innerHTML=dati.map(function(d){
+      return '<tr>'+
+        '<td>'+statoHtmlBar(d.stato)+'</td>'+
+        '<td style="font-weight:600">'+(sezione==='cocktail'?'🍸':'☕')+' '+d.c.nome+'</td>'+
+        '<td class="td-right">'+bcBadge(d.bc)+'</td>'+
+        '<td class="td-right td-mono">'+(d.margine!==null?fmt(d.margine):'—')+'</td>'+
+        '<td class="td-right"><input type="number" class="vendite-input" data-rid="'+d.c.id+'" value="'+d.vendite+'" min="0" step="1"></td>'+
+        '<td class="td-right td-mono">'+(d.margineTot!==null?'<strong style="color:var(--green)">'+fmt(d.margineTot)+'</strong>':'—')+'</td>'+
+        '<td class="td-right td-mono">'+(d.ricavoTot!==null?fmt(d.ricavoTot):'—')+'</td>'+
+        '<td style="font-size:11px;color:var(--muted);font-style:italic">'+consiglioTestoBar(d.stato)+'</td>'+
+      '</tr>';
+    }).join('');
+  }
+}
+
+function exportAnalisiExcelBar(){
+  var sezione=(document.getElementById('analisi-sezione-sel')||{}).value||'cocktail';
+  var lista=sezione==='cocktail'?cocktail:caffe;
+  var menu=getMenus().find(function(m){return m.id===currentMenuId;})||{};
+  var dati=lista.map(function(c){
+    var costo=sezione==='cocktail'?costoDrink(c):costoBevanda(c);
+    var bc=c.prezzo>0?(costo/c.prezzo)*100:null;
+    var prezzo=parseFloat(c.prezzo)||0;
+    var margine=prezzo>0?prezzo-costo:null;
+    var vendite=getVenditeBar(c.id);
+    return {c:c,costo:costo,bc:bc,prezzo:prezzo,margine:margine,vendite:vendite};
+  });
+  var media=dati.length?dati.reduce(function(s,d){return s+d.vendite;},0)/dati.length:0;
+  var bcV=dati.filter(function(d){return d.bc!==null;});
+  var bcS=bcV.length?bcV.reduce(function(s,d){return s+d.bc;},0)/bcV.length:25;
+  dati.forEach(function(d){
+    d.stato=classificaVoce(d.bc,d.vendite,media,bcS);
+    d.margineTot=d.margine!==null?d.margine*d.vendite:null;
+    d.ricavoTot=d.prezzo>0?d.prezzo*d.vendite:null;
+  });
+  var sep=';',rows=[];
+  rows.push(['BeverageCost Bar - Analisi '+(sezione==='cocktail'?'Cocktail':'Caffetteria')+' - '+(menu.nome||'')]);
+  rows.push(['Generato il: '+new Date().toLocaleDateString('it-IT')]);
+  rows.push([]);
+  rows.push(['Stato','Nome','BC%','Margine €','Vendite/sett.','Margine tot.','Ricavo/sett.','Consiglio']);
+  dati.forEach(function(d){
+    rows.push([
+      d.stato,d.c.nome,
+      d.bc!==null?d.bc.toFixed(1).replace('.',',')+'%':'',
+      d.margine!==null?d.margine.toFixed(2).replace('.',','):'',
+      d.vendite,
+      d.margineTot!==null?d.margineTot.toFixed(2).replace('.',','):'',
+      d.ricavoTot!==null?d.ricavoTot.toFixed(2).replace('.',','):'',
+      consiglioTestoBar(d.stato)
+    ]);
+  });
+  var csv=rows.map(function(r){return r.map(function(c){var s=String(c||'');return s.indexOf(sep)>=0?'"'+s+'"':s;}).join(sep);}).join('\r\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='analisi_'+(sezione==='cocktail'?'cocktail':'caffe')+'.csv';
+  a.click();
+}
+
+function exportAnalisiPDFBar(){
+  var sezione=(document.getElementById('analisi-sezione-sel')||{}).value||'cocktail';
+  var menu=getMenus().find(function(m){return m.id===currentMenuId;})||{};
+  document.getElementById('print-title').textContent='Analisi '+(sezione==='cocktail'?'Cocktail':'Caffetteria')+' - '+(menu.nome||'');
+  document.getElementById('print-sub').textContent='Generato il '+new Date().toLocaleDateString('it-IT');
+  setTimeout(function(){window.print();},200);
+}
+
+function apriNuovoIng(){
+  if(currentIngTipo==='bar') openIngModal();
+  else openIngCaffeModal();
+}
+
+function switchTab(tab,el){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('cocktail-grid').style.display=tab==='grid'?'grid':'none';
+  document.getElementById('cocktail-table').style.display=tab==='table'?'block':'none';
+  renderCocktail();
+}
+
+function switchTabCaffe(tab,el){
+  currentTabCaffe=tab;
+  document.getElementById('caffe-grid').style.display=tab==='grid'?'grid':'none';
+  document.getElementById('caffe-table').style.display=tab==='table'?'block':'none';
+  renderCaffe();
+}
+
+/* ── CAFFE COST HELPERS ───────────────────────────────────── */
+function costoUnitarioCaffe(ing){
+  if(!ing||!ing.qty||!ing.prezzo)return 0;
+  return ing.prezzo/ing.qty;
+}
+function costoBevanda(cf){
+  var tot=0;
+  (cf.ingredienti||[]).forEach(function(r){
+    var ing=ingredientiCaffe.find(function(i){return i.id===r.id;});
+    if(ing)tot+=costoUnitarioCaffe(ing)*(parseFloat(r.qty)||0);
+  });
+  return tot;
+}
+function fcPercentCaffe(cf){
+  var costo=costoBevanda(cf),prezzo=parseFloat(cf.prezzo);
+  if(!prezzo||!costo)return null;
+  return (costo/prezzo)*100;
+}
+
+/* ── RENDER CAFFETTERIA ───────────────────────────────────── */
+function renderCaffe(){
+  var search=(document.getElementById('search-caffe')||{}).value||'';
+  var filterCat=(document.getElementById('filter-caffe-cat')||{}).value||'';
+  var cats=[...new Set(caffe.map(function(c){return c.cat;}))].sort();
+  var sel=document.getElementById('filter-caffe-cat');
+  if(sel){
+    var prev=sel.value;
+    sel.innerHTML='<option value="">Tutte le categorie</option>'+cats.map(function(c){return '<option value="'+c+'"'+(c===prev?' selected':'')+'>'+c+'</option>';}).join('');
+  }
+  var filtered=caffe.filter(function(c){
+    return (!search||c.nome.toLowerCase().includes(search.toLowerCase()))&&
+           (!filterCat||c.cat===filterCat);
+  });
+  // Stats
+  var statsEl=document.getElementById('stats-caffe');
+  if(statsEl){
+    var totCosto=caffe.reduce(function(s,c){return s+costoBevanda(c);},0);
+    var avg=caffe.length?totCosto/caffe.length:0;
+    statsEl.innerHTML=
+      '<div class="stat-card"><div class="stat-label">Bevande totali</div><div class="stat-value">'+caffe.length+'</div><div class="stat-sub">in questo menu</div></div>'+
+      '<div class="stat-card"><div class="stat-label">Costo medio bevanda</div><div class="stat-value" style="color:var(--gold)">'+fmt(avg)+'</div><div class="stat-sub">per bevanda</div></div>'+
+      '<div class="stat-card"><div class="stat-label">Ingredienti caffetteria</div><div class="stat-value">'+ingredientiCaffe.length+'</div><div class="stat-sub">disponibili</div></div>';
+  }
+  // Grid
+  var grid=document.getElementById('caffe-grid');
+  if(grid&&currentTabCaffe==='grid'){
+    grid.innerHTML=filtered.length?filtered.map(function(c){
+      var costo=costoBevanda(c),fc=fcPercentCaffe(c);
+      var fcClass=fc===null?'':(fc<=25?'fc-green':fc<=35?'fc-orange':'fc-red');
+      return '<div class="cocktail-card" onclick="openViewCaffe(\''+c.id+'\')">'+
+        '<div class="card-header"><span class="card-emoji">☕</span>'+
+        (fc!==null?'<span class="fc-badge '+fcClass+'">FC '+fc.toFixed(1)+'%</span>':'<span class="fc-badge" style="color:var(--muted)">No prezzo</span>')+
+        '</div>'+
+        '<div class="card-name">'+c.nome+'</div>'+
+        '<div class="card-ingredients">'+c.cat+'</div>'+
+        '<div class="card-footer">'+
+          '<div><div class="cost-label">Costo</div><div class="cost-value">'+fmt(costo)+'</div></div>'+
+          '<div class="card-actions">'+
+            '<button class="btn-icon" onclick="event.stopPropagation();openCaffeModal(\''+c.id+'\')">✏️</button>'+
+            '<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();eliminaCaffe(\''+c.id+'\')">🗑</button>'+
+          '</div>'+
+        '</div></div>';
+    }).join(''):'<div style="color:var(--muted);font-size:14px;padding:40px;text-align:center">Nessuna bevanda trovata. Aggiungi la prima!</div>';
+  }
+  // Table
+  var table=document.getElementById('caffe-table');
+  if(table&&currentTabCaffe==='table'){
+    table.innerHTML='<table><thead><tr><th>Nome</th><th>Categoria</th><th class="td-right">Costo</th><th class="td-right">Prezzo</th><th class="td-right">BC%</th><th class="td-center">Azioni</th></tr></thead><tbody>'+
+    filtered.map(function(c){
+      var costo=costoBevanda(c),fc=fcPercentCaffe(c);
+      var fcClass=fc===null?'':(fc<=25?'fc-green':fc<=35?'fc-orange':'fc-red');
+      return '<tr>'+
+        '<td>'+c.nome+'</td>'+
+        '<td>'+c.cat+'</td>'+
+        '<td class="td-right td-mono">'+fmt(costo)+'</td>'+
+        '<td class="td-right td-mono">'+(c.prezzo?fmt(c.prezzo):'—')+'</td>'+
+        '<td class="td-right">'+(fc!==null?'<span class="fc-badge '+fcClass+'">'+fc.toFixed(1)+'%</span>':'—')+'</td>'+
+        '<td class="td-center"><button class="btn-icon" onclick="openCaffeModal(\''+c.id+'\')">✏️</button> <button class="btn-icon" style="color:var(--red)" onclick="eliminaCaffe(\''+c.id+'\')">🗑</button></td>'+
+      '</tr>';
+    }).join('')+'</tbody></table>';
+  }
+}
+
+/* ── RENDER ING CAFFETTERIA ───────────────────────────────── */
+function renderIngCaffe(){
+  var search=(document.getElementById('search-ing-caffe')||{}).value||'';
+  var filterCat=(document.getElementById('filter-ing-caffe-cat')||{}).value||'';
+  var cats=[...new Set(ingredientiCaffe.map(function(i){return i.cat;}))].sort();
+  var sel=document.getElementById('filter-ing-caffe-cat');
+  if(sel){
+    var prev=sel.value;
+    sel.innerHTML='<option value="">Tutte le categorie</option>'+cats.map(function(c){return '<option value="'+c+'"'+(c===prev?' selected':'')+'>'+c+'</option>';}).join('');
+  }
+  var filtered=ingredientiCaffe.filter(function(i){
+    return (!search||i.nome.toLowerCase().includes(search.toLowerCase()))&&
+           (!filterCat||i.cat===filterCat);
+  });
+  var tbody=document.getElementById('ing-caffe-tbody');
+  if(!tbody)return;
+  tbody.innerHTML=filtered.map(function(i){
+    var cu=costoUnitarioCaffe(i);
+    return '<tr>'+
+      '<td>'+i.nome+'</td>'+
+      '<td>'+i.cat+'</td>'+
+      '<td class="td-right">'+fmt(i.prezzo)+'</td>'+
+      '<td class="td-right">'+i.qty+' '+i.unit+'</td>'+
+      '<td class="td-right" style="color:var(--gold);font-weight:600">'+fmt(cu)+'/'+i.unit+'</td>'+
+      '<td class="td-center">'+
+        '<button class="btn-icon" onclick="openIngCaffeModal(\''+i.id+'\')">✏️</button> '+
+        '<button class="btn-icon" style="color:var(--red)" onclick="eliminaIngCaffe(\''+i.id+'\')">🗑</button>'+
+      '</td></tr>';
+  }).join('');
+}
+
+/* ── MODAL APRI/SALVA CAFFETTERIA ─────────────────────────── */
+function openCaffeModal(id){
+  var c=id?caffe.find(function(x){return x.id===id;}):null;
+  document.getElementById('edit-caffe-id').value=id||'';
+  document.getElementById('modal-caffe-title').textContent=c?'Modifica Bevanda':'Nuova Bevanda';
+  document.getElementById('cf-nome').value=c?c.nome:'';
+  document.getElementById('cf-cat').value=c?c.cat:'☕ Caffetteria classica';
+  document.getElementById('cf-prezzo').value=c?c.prezzo:'';
+  document.getElementById('cf-note').value=c?c.note:'';
+  var list=document.getElementById('ing-caffe-list-modal');
+  list.innerHTML='';
+  if(c)c.ingredienti.forEach(function(r){addIngCaffeRow(r.id,r.qty);});
+  updateCaffePreview();
+  document.getElementById('modal-caffe').classList.remove('hidden');
+}
+
+async function saveCaffe(){
+  var nome=document.getElementById('cf-nome').value.trim();
+  if(!nome){alert('Inserisci il nome della bevanda');return;}
+  var rows=document.querySelectorAll('#ing-caffe-list-modal .ing-row');
+  var ings=[];
+  rows.forEach(function(row){
+    var sel=row.querySelector('select.ing-native');
+    var qty=parseFloat(row.querySelector('input[type=number]').value||0);
+    if(sel&&sel.value&&qty>0)ings.push({id:sel.value,qty:qty,unit:'g'});
+  });
+  var id=document.getElementById('edit-caffe-id').value;
+  var obj={
+    id:id||('cf_'+Date.now()),
+    tipo:'caffe',
+    nome:nome,
+    cat:document.getElementById('cf-cat').value,
+    prezzo:parseFloat(document.getElementById('cf-prezzo').value)||0,
+    note:document.getElementById('cf-note').value.trim(),
+    ingredienti:ings,
+    vendite:0
+  };
+  if(id){var existing=caffe.find(function(x){return x.id===id;});if(existing)obj.vendite=existing.vendite||0;}
+  await sbSaveCoc(currentMenuId, obj);
+  if(id){caffe=caffe.map(function(c){return c.id===id?obj:c;});}
+  else{caffe.push(obj);}
+  closeModal('modal-caffe');
+  renderCaffe();
+}
+
+async function eliminaCaffe(id){
+  if(!confirm('Eliminare questa bevanda?'))return;
+  await sbDeleteCoc(id);
+  caffe=caffe.filter(function(c){return c.id!==id;});
+  renderCaffe();
+}
+
+/* ── ING ROW CAFFETTERIA ──────────────────────────────────── */
+function addIngCaffeRow(selId,qty){
+  selId=selId||'';qty=qty||'';
+  var list=document.getElementById('ing-caffe-list-modal');
+  var row=document.createElement('div');
+  row.className='ing-row';
+  var opts=ingredientiCaffe.map(function(i){
+    return '<option value="'+i.id+'"'+(i.id===selId?' selected':'')+'>'+i.nome+' ('+i.cat+')</option>';
+  }).join('');
+  row.innerHTML='<select onchange="updateCaffePreview()">'+opts+'</select>'+
+    '<input type="number" placeholder="Qtà" value="'+qty+'" step="0.1" min="0" oninput="updateCaffePreview()">'+
+    '<div style="font-size:11px;color:var(--muted);text-align:center" class="unit-label"></div>'+
+    '<button class="btn-icon" style="color:var(--red)" onclick="this.parentElement.remove();updateCaffePreview()">×</button>';
+  var sel=row.querySelector('select');
+  function upd(){var ing=ingredientiCaffe.find(function(i){return i.id===sel.value;});row.querySelector('.unit-label').textContent=ing?ing.unit:'';}
+  sel.addEventListener('change',upd);upd();
+  list.appendChild(row);
+  updateCaffePreview();
+}
+
+function updateCaffePreview(){
+  var rows=document.querySelectorAll('#ing-caffe-list-modal .ing-row');
+  var tot=0;
+  rows.forEach(function(row){
+    var sel=row.querySelector('select');
+    var qty=parseFloat(row.querySelector('input[type=number]').value||0);
+    var ing=ingredientiCaffe.find(function(i){return i.id===sel.value;});
+    if(ing&&qty)tot+=costoUnitarioCaffe(ing)*qty;
+    var lbl=row.querySelector('.unit-label');
+    if(lbl&&ing)lbl.textContent=ing.unit;
+  });
+  document.getElementById('preview-caffe-cost-val').textContent=fmt(tot);
+  var prezzo=parseFloat(document.getElementById('cf-prezzo').value);
+  if(prezzo&&tot){
+    var fc=(tot/prezzo)*100;
+    document.getElementById('preview-caffe-fc-val').textContent='BC '+fc.toFixed(1)+'%';
+    document.getElementById('preview-caffe-fc-val').style.color=fc<=25?'var(--green)':fc<=35?'var(--orange)':'var(--red)';
+  } else {
+    document.getElementById('preview-caffe-fc-val').textContent='--';
+    document.getElementById('preview-caffe-fc-val').style.color='var(--muted)';
+  }
+  var targetFc=parseFloat(document.getElementById('caffe-target-fc').value)||25;
+  var sugEl=document.getElementById('preview-caffe-sug');
+  if(tot>0&&targetFc>0)sugEl.textContent=fmt(tot/(targetFc/100));
+  else sugEl.textContent='—';
+}
+
+/* ── VIEW MODAL CAFFETTERIA ───────────────────────────────── */
+function openViewCaffe(id){
+  caffe=ldCaffe(currentMenuId);
+  var c=caffe.find(function(x){return x.id===id;});
+  if(!c)return;
+  currentViewCaffeId=id;
+  document.getElementById('view-caffe-nome').textContent=c.nome;
+  document.getElementById('view-caffe-cat').textContent=c.cat;
+  var noteEl=document.getElementById('view-caffe-note');
+  noteEl.textContent=c.note||'';
+  noteEl.style.display=c.note?'block':'none';
+  var costo=costoBevanda(c),fc=fcPercentCaffe(c);
+  document.getElementById('view-caffe-ing-list').innerHTML=(c.ingredienti||[]).map(function(r){
+    var ing=ingredientiCaffe.find(function(i){return i.id===r.id;});
+    if(!ing)return '';
+    return '<div class="view-ing-row">'+
+      '<div><div class="view-ing-name">'+ing.nome+'</div><div class="view-ing-qty">'+r.qty+' '+ing.unit+'</div></div>'+
+      '<div class="view-ing-cost">'+fmt(costoUnitarioCaffe(ing)*parseFloat(r.qty||0))+'</div></div>';
+  }).join('');
+  document.getElementById('view-caffe-total').textContent=fmt(costo);
+  var fcHtml='';
+  if(c.prezzo>0&&fc!==null){
+    var fcClass=fc<=25?'fc-green':fc<=35?'fc-orange':'fc-red';
+    fcHtml='<span class="fc-pill '+fcClass+'">BC: '+fc.toFixed(1)+'%</span>'+
+      '<span class="fc-pill" style="background:rgba(255,255,255,.05);color:var(--muted)">Prezzo: '+fmt(c.prezzo)+'</span>'+
+      '<span class="fc-pill" style="background:rgba(76,175,125,.08);color:var(--green)">Margine: '+fmt(parseFloat(c.prezzo)-costo)+'</span>';
+  } else {
+    fcHtml='<span class="fc-pill" style="background:rgba(255,255,255,.05);color:var(--muted)">Nessun prezzo impostato</span>';
+  }
+  document.getElementById('view-caffe-fc-detail').innerHTML=fcHtml;
+  var sugBox=document.getElementById('view-caffe-sug-box');
+  if(sugBox){
+    var td=25;var sug=costo>0?costo/(td/100):0;
+    sugBox.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">'+
+      '<div style="display:flex;align-items:center;gap:8px">'+
+        '<span style="font-size:12px;color:var(--muted)">Target BC %</span>'+
+        '<input type="number" id="view-caffe-target-fc" value="'+td+'" min="1" max="100" step="1" oninput="aggiornaViewSuggeritoCaffe('+costo+')" style="width:55px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center">'+
+        '<span style="font-size:12px;color:var(--muted)">%</span>'+
+      '</div>'+
+      '<div style="text-align:right">'+
+        '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">💡 Prezzo suggerito</div>'+
+        '<div style="font-size:22px;font-weight:700;color:var(--green)" id="view-caffe-sug-val">'+fmt(sug)+'</div>'+
+      '</div></div>';
+  }
+  document.getElementById('modal-view-caffe').classList.remove('hidden');
+}
+
+function aggiornaViewSuggeritoCaffe(costo){
+  var t=parseFloat(document.getElementById('view-caffe-target-fc').value)||25;
+  var el=document.getElementById('view-caffe-sug-val');
+  if(el)el.textContent=costo>0&&t>0?fmt(costo/(t/100)):'—';
+}
+
+function editFromViewCaffe(){closeModal('modal-view-caffe');openCaffeModal(currentViewCaffeId);}
+
+/* ── INGREDIENTI CAFFETTERIA MODAL ────────────────────────── */
+function openIngCaffeModal(id){
+  var i=id?ingredientiCaffe.find(function(x){return x.id===id;}):null;
+  document.getElementById('edit-ing-caffe-id').value=id||'';
+  document.getElementById('modal-ing-caffe-title').textContent=i?'Modifica Ingrediente':'Nuovo Ingrediente Caffetteria';
+  document.getElementById('ic-nome').value=i?i.nome:'';
+  document.getElementById('ic-cat').value=i?i.cat:'Caffè & Derivati';
+  document.getElementById('ic-unit').value=i?i.unit:'g';
+  document.getElementById('ic-prezzo').value=i?i.prezzo:'';
+  document.getElementById('ic-qty').value=i?i.qty:'';
+  document.getElementById('ic-costo-unit').value=i?fmt(costoUnitarioCaffe(i)):'';
+  document.getElementById('modal-ing-caffe').classList.remove('hidden');
+}
+
+function updateIngCaffePreview(){
+  var p=parseFloat(document.getElementById('ic-prezzo').value)||0;
+  var q=parseFloat(document.getElementById('ic-qty').value)||0;
+  var u=document.getElementById('ic-unit').value;
+  document.getElementById('ic-costo-unit').value=q>0?fmt(p/q)+'/'+u:'';
+}
+
+async function saveIngCaffe(){
+  var nome=document.getElementById('ic-nome').value.trim();
+  if(!nome){alert('Inserisci il nome');return;}
+  var id=document.getElementById('edit-ing-caffe-id').value;
+  var obj={
+    id:id||uid(),
+    nome:nome,
+    cat:document.getElementById('ic-cat').value,
+    unit:document.getElementById('ic-unit').value,
+    prezzo:parseFloat(document.getElementById('ic-prezzo').value)||0,
+    qty:parseFloat(document.getElementById('ic-qty').value)||0
+  };
+  if(id){var idx=ingredientiCaffe.findIndex(function(x){return x.id===id;});if(idx>=0)ingredientiCaffe[idx]=obj;else ingredientiCaffe.push(obj);}
+  else ingredientiCaffe.push(obj);
+  await sbUpsertIngBar(Object.assign({},obj,{cat:'Caffetteria'}));
+  closeModal('modal-ing-caffe');
+  renderIngCaffe();
+}
+
+function eliminaIngCaffe(id){
+  if(!confirm('Eliminare questo ingrediente?'))return;
+  ingredientiCaffe=ingredientiCaffe.filter(function(i){return i.id!==id;});
+  sd('fcbar_ing_caffe',ingredientiCaffe);
+  renderIngCaffe();
+}
+
+function switchTab(tab,el){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('cocktail-grid').style.display=tab==='grid'?'grid':'none';
+  document.getElementById('cocktail-table').style.display=tab==='table'?'block':'none';
+  renderCocktail();
+}
+
+/* ── DROPDOWN ─────────────────────────────────────────────── */
+function toggleDrop(){
+  document.getElementById('drop-menu').classList.toggle('open');
+}
+function toggleDropCaffe(){
+  document.getElementById('drop-menu-caffe').classList.toggle('open');
+}
+
+/* ── EXPORT / IMPORT JSON ─────────────────────────────────── */
+function exportJSON(){
+  // Chiudi entrambi i dropdown
+  var dm=document.getElementById('drop-menu'); if(dm)dm.classList.remove('open');
+  var dc=document.getElementById('drop-menu-caffe'); if(dc)dc.classList.remove('open');
+  var menus=getMenus();
+  var allCoc={}, allCaffe={};
+  menus.forEach(function(m){
+    allCoc[m.id]=ldCoc(m.id);
+    allCaffe[m.id]=ldCaffe(m.id);
+  });
+  var backup={
+    version:'1.0',
+    app:'beveragecost-bar',
+    date:new Date().toISOString(),
+    ingredienti:ingredienti,
+    ingredientiCaffe:ingredientiCaffe,
+    menus:menus,
+    cocktail:allCoc,
+    caffe:allCaffe
+  };
+  var blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='beveragecost_bar_backup_'+new Date().toLocaleDateString('it-IT').replace(/\//g,'-')+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importJSON(input){
+  var dm=document.getElementById('drop-menu'); if(dm)dm.classList.remove('open');
+  var dc=document.getElementById('drop-menu-caffe'); if(dc)dc.classList.remove('open');
+  var file=input.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var backup=JSON.parse(e.target.result);
+      if(!backup.version||!backup.menus||(!backup.cocktail&&!backup.caffe)){
+        alert('File non valido. Usa un backup generato da FoodCost 360 Bar.');
+        return;
+      }
+      if(!confirm('Vuoi ripristinare il backup del '+new Date(backup.date).toLocaleDateString('it-IT')+'?\n\nATTENZIONE: i dati attuali verranno sovrascritti.'))return;
+  
+  
+  
+      if(backup.cocktail){
+        Object.keys(backup.cocktail).forEach(function(mid){sdCoc(mid,backup.cocktail[mid]);});
+      }
+      if(backup.caffe){
+        Object.keys(backup.caffe).forEach(function(mid){sdCaffe(mid,backup.caffe[mid]);});
+      }
+      alert('✓ Backup ripristinato con successo!');
+      location.reload();
+    }catch(err){
+      alert('Errore nella lettura del file: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+document.addEventListener('click',function(e){
+  var dd=document.getElementById('dd-scarica');
+  if(dd&&!dd.contains(e.target))document.getElementById('drop-menu').classList.remove('open');
+  var ddc=document.getElementById('dd-scarica-caffe');
+  if(ddc&&!ddc.contains(e.target))document.getElementById('drop-menu-caffe').classList.remove('open');
+});
+
+/* ── EXPORT PDF ───────────────────────────────────────────── */
+function exportPDF(){
+  document.getElementById('drop-menu').classList.remove('open');
+  var wasGrid=currentTab==='grid';
+  if(wasGrid){
+    currentTab='table';
+    document.getElementById('cocktail-grid').style.display='none';
+    document.getElementById('cocktail-table').style.display='block';
+    renderCocktail();
+  }
+  var menu=getMenus().find(function(m){return m.id===currentMenuId;})||{};
+  document.getElementById('print-title').textContent='BeverageCost Bar - '+(menu.nome||'');
+  document.getElementById('print-sub').textContent='Generato il '+new Date().toLocaleDateString('it-IT')+' - '+cocktail.length+' cocktail';
+  setTimeout(function(){
+    window.print();
+    if(wasGrid){
+      currentTab='grid';
+      document.getElementById('cocktail-grid').style.display='grid';
+      document.getElementById('cocktail-table').style.display='none';
+      renderCocktail();
+    }
+  },200);
+}
+
+/* ── EXPORT EXCEL (CSV) ───────────────────────────────────── */
+function exportExcel(){
+  document.getElementById('drop-menu').classList.remove('open');
+  var menu=getMenus().find(function(m){return m.id===currentMenuId;})||{};
+  var cocs=ldCoc(currentMenuId);
+  var sep=';';
+  var rows=[];
+  rows.push(['BeverageCost Bar - '+(menu.nome||'')]);
+  rows.push(['Generato il: '+new Date().toLocaleDateString('it-IT')]);
+  rows.push([]);
+  rows.push(['COCKTAIL']);
+  rows.push(['Nome','Categoria','Ingredienti','Costo drink','Prezzo vendita','Food Cost %','Margine']);
+  cocs.forEach(function(c){
+    var costo=costoDrink(c);
+    var fc=fcPercent(c);
+    var ingNomi=(c.ingredienti||[]).map(function(r){
+      var ing=ingredienti.find(function(i){return i.id===r.id;});
+      return ing?ing.nome+' '+r.qty+ing.unit:'?';
+    }).join(' | ');
+    rows.push([
+      c.nome,c.cat,ingNomi,
+      costo>0?costo.toFixed(2).replace('.',','):'',
+      c.prezzo>0?parseFloat(c.prezzo).toFixed(2).replace('.',','):'',
+      fc!==null?fc.toFixed(1).replace('.',',')+'%':'',
+      (c.prezzo>0&&costo>0)?(parseFloat(c.prezzo)-costo).toFixed(2).replace('.',','):''
+    ]);
+  });
+  rows.push([]);rows.push([]);
+  rows.push(['INGREDIENTI']);
+  rows.push(['Nome','Categoria','Prezzo acquisto','Quantita','Costo per unita']);
+  ingredienti.slice().sort(function(a,b){
+    return a.cat.localeCompare(b.cat)||a.nome.localeCompare(b.nome);
+  }).forEach(function(i){
+    var cu=costoUnitario(i);
+    rows.push([
+      i.nome,i.cat,
+      i.prezzo>0?i.prezzo.toFixed(2).replace('.',','):'',
+      i.qty>0?i.qty+' '+i.unit:'',
+      cu>0?cu.toFixed(4).replace('.',',')+' / '+i.unit:''
+    ]);
+  });
+  var csv=rows.map(function(r){
+    return r.map(function(cell){
+      var s=String(cell||'');
+      return (s.indexOf(sep)>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0)?'"'+s.replace(/"/g,'""')+'"':s;
+    }).join(sep);
+  }).join('\r\n');
+  var bom='\uFEFF';
+  var blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  var nomeFile='foodcost-'+(menu.nome||'menu').replace(/\s+/g,'-').toLowerCase()+'-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.download=nomeFile;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ── EXPORT CAFFETTERIA PDF ───────────────────────────────── */
+function exportCaffePDF(){
+  document.getElementById('drop-menu-caffe').classList.remove('open');
+  var wasGrid=currentTabCaffe==='grid';
+  if(wasGrid){
+    currentTabCaffe='table';
+    document.getElementById('caffe-grid').style.display='none';
+    document.getElementById('caffe-table').style.display='block';
+    renderCaffe();
+  }
+  var menu=getMenus().find(function(m){return m.id===currentMenuId;})||{};
+  document.getElementById('print-title').textContent='BeverageCost Bar - Caffetteria - '+(menu.nome||'');
+  document.getElementById('print-sub').textContent='Generato il '+new Date().toLocaleDateString('it-IT')+' - '+caffe.length+' bevande';
+  setTimeout(function(){
+    window.print();
+    if(wasGrid){
+      currentTabCaffe='grid';
+      document.getElementById('caffe-grid').style.display='grid';
+      document.getElementById('caffe-table').style.display='none';
+      renderCaffe();
+    }
+  },200);
+}
+
+/* ── EXPORT CAFFETTERIA EXCEL ─────────────────────────────── */
+function exportCaffeExcel(){
+  document.getElementById('drop-menu-caffe').classList.remove('open');
+  var menu=getMenus().find(function(m){return m.id===currentMenuId;})||{};
+  var lista=ldCaffe(currentMenuId);
+  var sep=';';
+  var rows=[];
+  rows.push(['BeverageCost Bar - Caffetteria - '+(menu.nome||'')]);
+  rows.push(['Generato il: '+new Date().toLocaleDateString('it-IT')]);
+  rows.push([]);
+  rows.push(['BEVANDE']);
+  rows.push(['Nome','Categoria','Ingredienti','Costo bevanda','Prezzo vendita','BC %','Margine']);
+  lista.forEach(function(c){
+    var costo=costoBevanda(c);
+    var fc=fcPercentCaffe(c);
+    var ingNomi=(c.ingredienti||[]).map(function(r){
+      var ing=ingredientiCaffe.find(function(i){return i.id===r.id;});
+      return ing?ing.nome+' '+r.qty+ing.unit:'?';
+    }).join(' | ');
+    rows.push([
+      c.nome,c.cat,ingNomi,
+      costo>0?costo.toFixed(2).replace('.',','):'',
+      c.prezzo>0?parseFloat(c.prezzo).toFixed(2).replace('.',','):'',
+      fc!==null?fc.toFixed(1).replace('.',',')+'%':'',
+      (c.prezzo>0&&costo>0)?(parseFloat(c.prezzo)-costo).toFixed(2).replace('.',','):''
+    ]);
+  });
+  rows.push([]);rows.push([]);
+  rows.push(['INGREDIENTI CAFFETTERIA']);
+  rows.push(['Nome','Categoria','Prezzo acquisto','Quantita','Costo per unita']);
+  ingredientiCaffe.slice().sort(function(a,b){
+    return a.cat.localeCompare(b.cat)||a.nome.localeCompare(b.nome);
+  }).forEach(function(i){
+    var cu=costoUnitarioCaffe(i);
+    rows.push([
+      i.nome,i.cat,
+      i.prezzo>0?i.prezzo.toFixed(2).replace('.',','):'',
+      i.qty>0?i.qty+' '+i.unit:'',
+      cu>0?cu.toFixed(4).replace('.',',')+' / '+i.unit:''
+    ]);
+  });
+  var csv=rows.map(function(r){
+    return r.map(function(cell){
+      var s=String(cell||'');
+      return (s.indexOf(sep)>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0)?'"'+s.replace(/"/g,'""')+'"':s;
+    }).join(sep);
+  }).join('\r\n');
+  var bom='\uFEFF';
+  var blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='caffetteria_'+(menu.nome||'menu').replace(/\s+/g,'_').toLowerCase()+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function renderCocktail(){
+  cocktail=ldCoc(currentMenuId);
+  var menu=getMenus().find(function(m){return m.id===currentMenuId;})||{};
+  var tt=document.getElementById('topbar-cocktail-title');
+  if(tt)tt.textContent='🍸 '+menu.nome;
+
+  var q=(document.getElementById('search-cocktail').value||'').toLowerCase();
+  var cat=document.getElementById('filter-cat').value;
+
+  var CATS=['Classici IBA','Aperitivi','Long Drink','Shot','Analcolici','Signature','Altro'];
+  var sel=document.getElementById('filter-cat');
+  var cur=sel.value;
+  sel.innerHTML='<option value="">Tutte le categorie</option>'+CATS.map(function(c){
+    return '<option'+(c===cur?' selected':'')+'>'+c+'</option>';
+  }).join('');
+
+  var list=cocktail.filter(function(c){
+    return (!q||c.nome.toLowerCase().indexOf(q)>=0)&&(!cat||c.cat===cat);
+  });
+
+  var totalCost=cocktail.reduce(function(s,c){return s+costoDrink(c);},0);
+  var withPrice=cocktail.filter(function(c){return c.prezzo>0;});
+  var avgFc=withPrice.length?withPrice.reduce(function(s,c){return s+(fcPercent(c)||0);},0)/withPrice.length:null;
+  document.getElementById('stats-cocktail').innerHTML=
+    '<div class="stat-card"><div class="stat-label">Cocktail totali</div><div class="stat-value">'+cocktail.length+'</div><div class="stat-sub">in questo menu</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Costo medio drink</div><div class="stat-value">'+fmt(cocktail.length?totalCost/cocktail.length:0)+'</div><div class="stat-sub">per cocktail</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Food Cost medio</div><div class="stat-value" style="color:'+(avgFc?avgFc<=25?'var(--green)':avgFc<=35?'var(--orange)':'var(--red)':'var(--muted)')+'">'+
+    (avgFc?avgFc.toFixed(1)+'%':'--')+'</div><div class="stat-sub">'+(withPrice.length)+' con prezzo</div></div>';
+
+  if(currentTab==='grid'){
+    if(!list.length){
+      document.getElementById('cocktail-grid').innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🍸</div><div class="empty-text">'+(q?'Nessun cocktail trovato':'Menu vuoto - aggiungi il primo cocktail!')+'</div></div>';
+      return;
+    }
+    document.getElementById('cocktail-grid').innerHTML=list.map(function(c){
+      var costo=costoDrink(c),fc=fcPercent(c);
+      var ingNames=(c.ingredienti||[]).slice(0,4).map(function(r){
+        var ing=ingredienti.find(function(i){return i.id===r.id;});
+        return ing?ing.nome:'?';
+      }).join(', ')+(c.ingredienti.length>4?'...':'');
+      return '<div class="cocktail-card" onclick="viewCocktail(\''+c.id+'\')">'+
+        '<div class="card-header"><div class="card-emoji">'+catEmoji(c.cat)+'</div><div class="card-badge">'+c.cat+'</div></div>'+
+        '<div class="card-name">'+c.nome+'</div>'+
+        '<div class="card-ingredients">'+(ingNames||'--')+'</div>'+
+        '<div class="card-footer">'+
+          '<div><div class="cost-label">Costo drink</div>'+
+            (costo>0?'<div class="cost-value">'+fmt(costo)+'</div>':'<div class="cost-value no-price">nessun ingrediente</div>')+
+          '</div>'+
+          '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">'+
+            (fc!==null?'<span class="fc-badge '+fcBadgeClass(fc)+'">FC '+fc.toFixed(1)+'%</span>':'')+
+            '<div style="display:flex;gap:4px">'+
+              '<button class="btn-icon" onclick="event.stopPropagation();openCocktailModal(\''+c.id+'\')">'+
+                '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'+
+              '</button>'+
+              '<button class="btn-icon" style="color:var(--red)" onclick="event.stopPropagation();deleteCocktail(\''+c.id+'\')">'+
+                '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>'+
+              '</button>'+
+            '</div>'+
+          '</div>'+
+        '</div></div>';
+    }).join('');
+  } else {
+    document.getElementById('cocktail-table').innerHTML='<table><thead><tr>'+
+      '<th>Nome</th><th>Categoria</th><th class="td-right">N. Ing.</th>'+
+      '<th class="td-right">Costo drink</th><th class="td-right">Prezzo vendita</th>'+
+      '<th class="td-right">Food Cost %</th><th class="td-center">Azioni</th>'+
+      '</tr></thead><tbody>'+
+      (list.length?list.map(function(c){
+        var costo=costoDrink(c),fc=fcPercent(c);
+        return '<tr>'+
+          '<td><strong>'+c.nome+'</strong></td>'+
+          '<td>'+catEmoji(c.cat)+' '+c.cat+'</td>'+
+          '<td class="td-right td-mono">'+c.ingredienti.length+'</td>'+
+          '<td class="td-right td-mono">'+(costo>0?fmt(costo):'--')+'</td>'+
+          '<td class="td-right td-mono">'+(c.prezzo>0?fmt(c.prezzo):'<span style="color:var(--muted)">da impostare</span>')+'</td>'+
+          '<td class="td-right"><span class="fc-badge '+fcBadgeClass(fc)+'">'+(fc!==null?fc.toFixed(1)+'%':'--')+'</span></td>'+
+          '<td class="td-center"><div style="display:flex;gap:4px;justify-content:center">'+
+            '<button class="btn-icon" onclick="viewCocktail(\''+c.id+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></button>'+
+            '<button class="btn-icon" onclick="openCocktailModal(\''+c.id+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'+
+            '<button class="btn-icon" style="color:var(--red)" onclick="deleteCocktail(\''+c.id+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>'+
+          '</div></td></tr>';
+      }).join(''):'<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Nessun cocktail</td></tr>')+
+      '</tbody></table>';
+  }
+}
+
+/* ── VIEW COCKTAIL ────────────────────────────────────────── */
+function viewCocktail(id){
+  var c=cocktail.find(function(x){return x.id===id;});
+  if(!c)return;
+  currentViewId=id;
+  document.getElementById('view-emoji').textContent=catEmoji(c.cat);
+  document.getElementById('view-nome').textContent=c.nome;
+  document.getElementById('view-cat').textContent=c.cat;
+  document.getElementById('view-note').textContent=c.note||'';
+  document.getElementById('view-note').style.display=c.note?'block':'none';
+  var costo=costoDrink(c),fc=fcPercent(c);
+  document.getElementById('view-ing-list').innerHTML=(c.ingredienti||[]).map(function(r){
+    var ing=ingredienti.find(function(i){return i.id===r.id;});
+    if(!ing)return '';
+    return '<div class="view-ing-row">'+
+      '<div><div class="view-ing-name">'+ing.nome+'</div><div class="view-ing-qty">'+r.qty+' '+ing.unit+'</div></div>'+
+      '<div class="view-ing-cost">'+fmt(costoUnitario(ing)*parseFloat(r.qty||0))+'</div>'+
+      '</div>';
+  }).join('');
+  document.getElementById('view-total').textContent=fmt(costo);
+  var fcHtml='';
+  if(c.prezzo>0&&fc!==null){
+    fcHtml='<span class="fc-pill '+fcBadgeClass(fc)+'">Food Cost: '+fc.toFixed(1)+'%</span>'+
+      '<span class="fc-pill" style="background:rgba(255,255,255,.05);color:var(--muted)">Prezzo: '+fmt(c.prezzo)+'</span>'+
+      '<span class="fc-pill" style="background:rgba(76,175,125,.08);color:var(--green)">Margine: '+fmt(parseFloat(c.prezzo)-costo)+'</span>';
+  } else {
+    fcHtml='<span class="fc-pill" style="background:rgba(255,255,255,.05);color:var(--muted)">Nessun prezzo impostato</span>';
+  }
+  document.getElementById('view-fc-detail').innerHTML=fcHtml;
+  var sugBox=document.getElementById('view-prezzo-suggerito-box');
+  if(sugBox){
+    var targetDefault=25;
+    var sug=costo>0?costo/(targetDefault/100):0;
+    sugBox.innerHTML=
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">'+
+      '<div style="display:flex;align-items:center;gap:8px">'+
+        '<span style="font-size:12px;color:var(--muted)">Target BC %</span>'+
+        '<input type="number" id="view-target-fc" value="'+targetDefault+'" min="1" max="100" step="1" '+
+          'oninput="aggiornaViewSuggerito('+costo+')" '+
+          'style="width:55px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center">'+
+        '<span style="font-size:12px;color:var(--muted)">%</span>'+
+      '</div>'+
+      '<div style="text-align:right">'+
+        '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">💡 Prezzo suggerito</div>'+
+        '<div style="font-size:22px;font-weight:700;color:var(--green)" id="view-sug-val">'+fmt(sug)+'</div>'+
+      '</div>'+
+      '</div>';
+  }
+  document.getElementById('modal-view').classList.remove('hidden');
+}
+
+function editFromView(){ closeModal('modal-view'); openCocktailModal(currentViewId); }
+
+function aggiornaViewSuggerito(costo){
+  var t=parseFloat(document.getElementById('view-target-fc').value)||25;
+  var el=document.getElementById('view-sug-val');
+  if(el)el.textContent=costo>0&&t>0?fmt(costo/(t/100)):'—';
+}
+
+/* ── COCKTAIL MODAL ───────────────────────────────────────── */
+function openCocktailModal(id){
+  cocktail=ldCoc(currentMenuId);
+  var c=id?cocktail.find(function(x){return x.id===id;}):null;
+  document.getElementById('edit-cocktail-id').value=id||'';
+  document.getElementById('modal-cocktail-title').textContent=c?'Modifica Cocktail':'Nuovo Cocktail';
+  document.getElementById('c-nome').value=c?c.nome:'';
+  document.getElementById('c-cat').value=c?c.cat:'Classici IBA';
+  document.getElementById('c-prezzo').value=c?c.prezzo:'';
+  document.getElementById('c-note').value=c?c.note:'';
+  var list=document.getElementById('ing-list-modal');
+  list.innerHTML='';
+  if(c)c.ingredienti.forEach(function(r){addIngRow(r.id,r.qty);});
+  updateCostPreview();
+  document.getElementById('modal-cocktail').classList.remove('hidden');
+}
+
+function addIngRow(selId,qty){
+  selId=selId||'';qty=qty||'';
+  var list=document.getElementById('ing-list-modal');
+  var row=document.createElement('div');
+  row.className='ing-row';
+  var selIng=selId?ingredienti.find(function(i){return i.id===selId;}):null;
+  var unitTxt=selIng?selIng.unit:'';
+  row.innerHTML=
+    '<select class="ing-native">'+
+      ingredienti.map(function(i){return '<option value="'+i.id+'"'+(i.id===selId?' selected':'')+'>'+i.nome+'</option>';}).join('')+
+    '</select>'+
+    '<div class="ing-search-wrap">'+
+      '<input type="text" class="ing-search-input'+(selIng?'':' placeholder')+'" readonly '+
+        'value="'+(selIng?selIng.nome:'')+'" '+
+        'placeholder="Cerca ingrediente..." '+
+        'onclick="openIngPicker(this)">'+
+      '<div class="ing-dropdown">'+
+        '<div class="ing-search-box"><input type="text" placeholder="🔍 Cerca..." oninput="filterIngPicker(this)" autocomplete="off"></div>'+
+        '<div class="ing-picker-list"></div>'+
+      '</div>'+
+    '</div>'+
+    '<input type="number" placeholder="cl" value="'+qty+'" step="0.1" min="0" oninput="updateCostPreview()">'+
+    '<div style="font-size:11px;color:var(--muted);text-align:center" class="unit-label">'+unitTxt+'</div>'+
+    '<button class="btn-icon" style="color:var(--red)" onclick="this.parentElement.remove();updateCostPreview()">x</button>';
+  list.appendChild(row);
+  renderIngPickerList(row.querySelector('.ing-picker-list'), selId);
+  updateCostPreview();
+}
+
+function renderIngPickerList(listEl, selId, filter){
+  filter=(filter||'').toLowerCase();
+  var filtered=filter?
+    ingredienti.filter(function(i){return i.nome.toLowerCase().includes(filter)||(i.cat||'').toLowerCase().includes(filter);}):
+    ingredienti;
+  if(!filtered.length){listEl.innerHTML='<div class="ing-option-empty">Nessun ingrediente trovato</div>';return;}
+  var groups={};
+  filtered.forEach(function(i){var c=i.cat||'Altro';if(!groups[c])groups[c]=[];groups[c].push(i);});
+  var h='';
+  Object.keys(groups).sort().forEach(function(cat){
+    groups[cat].forEach(function(i){
+      h+='<div class="ing-option'+(i.id===selId?' focused':'')+'" '+
+        'data-id="'+i.id+'" data-nome="'+i.nome.replace(/"/g,'&quot;')+'" data-unit="'+i.unit+'" '+
+        'onclick="selectIngOption(this)">'+
+        '<span class="ing-option-nome">'+i.nome+'</span>'+
+        '<span class="ing-option-cat">'+cat+' · '+i.unit+'</span>'+
+      '</div>';
+    });
+  });
+  listEl.innerHTML=h;
+}
+
+function openIngPicker(input){
+  document.querySelectorAll('.ing-dropdown.open').forEach(function(d){
+    if(d!==input.nextElementSibling)d.classList.remove('open');
+  });
+  var dropdown=input.nextElementSibling;
+  dropdown.classList.toggle('open');
+  if(dropdown.classList.contains('open')){
+    var si=dropdown.querySelector('.ing-search-box input');
+    si.value='';
+    var row=input.closest('.ing-row');
+    var selId=row.querySelector('select.ing-native').value;
+    renderIngPickerList(dropdown.querySelector('.ing-picker-list'),selId);
+    setTimeout(function(){si.focus();},50);
+  }
+}
+
+function filterIngPicker(si){
+  var dropdown=si.closest('.ing-dropdown');
+  var row=si.closest('.ing-row');
+  var selId=row.querySelector('select.ing-native').value;
+  renderIngPickerList(dropdown.querySelector('.ing-picker-list'),selId,si.value);
+}
+
+function selectIngOption(opt){
+  var row=opt.closest('.ing-row');
+  var id=opt.getAttribute('data-id');
+  var nome=opt.getAttribute('data-nome');
+  var unit=opt.getAttribute('data-unit');
+  row.querySelector('select.ing-native').value=id;
+  var inp=row.querySelector('.ing-search-input');
+  inp.value=nome;inp.classList.remove('placeholder');
+  row.querySelector('.unit-label').textContent=unit;
+  opt.closest('.ing-dropdown').classList.remove('open');
+  updateCostPreview();
+}
+
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.ing-search-wrap')){
+    document.querySelectorAll('.ing-dropdown.open').forEach(function(d){d.classList.remove('open');});
+  }
+});
+
+function updateCostPreview(){
+  var rows=document.querySelectorAll('#ing-list-modal .ing-row');
+  var tot=0;
+  rows.forEach(function(row){
+    var sel=row.querySelector('select.ing-native');
+    var qty=parseFloat(row.querySelector('input[type=number]').value||0);
+    var ing=sel?ingredienti.find(function(i){return i.id===sel.value;}):null;
+    if(ing&&qty)tot+=costoUnitario(ing)*qty;
+    var lbl=row.querySelector('.unit-label');
+    if(lbl&&ing)lbl.textContent=ing.unit;
+  });
+  document.getElementById('preview-cost-val').textContent=fmt(tot);
+  var prezzo=parseFloat(document.getElementById('c-prezzo').value);
+  if(prezzo&&tot){
+    var fc=(tot/prezzo)*100;
+    document.getElementById('preview-fc-val').textContent='FC '+fc.toFixed(1)+'%';
+    document.getElementById('preview-fc-val').style.color=fc<=25?'var(--green)':fc<=35?'var(--orange)':'var(--red)';
+  } else {
+    document.getElementById('preview-fc-val').textContent='--';
+    document.getElementById('preview-fc-val').style.color='var(--muted)';
+  }
+  var targetFc=parseFloat(document.getElementById('target-fc').value)||25;
+  var sugEl=document.getElementById('preview-prezzo-suggerito');
+  if(tot>0&&targetFc>0){
+    var suggerito=tot/(targetFc/100);
+    sugEl.textContent=fmt(suggerito);
+  } else {
+    sugEl.textContent='—';
+  }
+}
+
+async function saveCocktail(){
+  var nome=document.getElementById('c-nome').value.trim();
+  if(!nome){alert('Inserisci il nome del cocktail');return;}
+  var rows=document.querySelectorAll('#ing-list-modal .ing-row');
+  var ings=[];
+  rows.forEach(function(row){
+    var sel=row.querySelector('select');
+    var qty=parseFloat(row.querySelector('input').value||0);
+    if(sel&&qty>0)ings.push({id:sel.value,qty:qty});
+  });
+  var id=document.getElementById('edit-cocktail-id').value;
+  var obj={id:id||uid(),nome:nome,cat:document.getElementById('c-cat').value,
+    prezzo:parseFloat(document.getElementById('c-prezzo').value)||0,
+    note:document.getElementById('c-note').value.trim(),ingredienti:ings};
+  cocktail=ldCoc(currentMenuId);
+  if(id){cocktail=cocktail.map(function(c){return c.id===id?obj:c;});}
+  else{cocktail.push(obj);}
+  sdCoc(currentMenuId,cocktail);
+  closeModal('modal-cocktail');
+  renderCocktail();
+}
+
+async function deleteCocktail(id){
+  var c=cocktail.find(function(x){return x.id===id;});
+  if(!confirm('Eliminare "'+c.nome+'"?'))return;
+  cocktail=cocktail.filter(function(x){return x.id!==id;});
+  sdCoc(currentMenuId,cocktail);
+  renderCocktail();
+}
+
+/* ── INGREDIENTI ──────────────────────────────────────────── */
+document.getElementById('i-unit').addEventListener('change',function(){
+  document.getElementById('i-unit-suffix').textContent=this.value;
+  updateIngPreview();
+});
+
+function updateIngPreview(){
+  var p=parseFloat(document.getElementById('i-prezzo').value)||0;
+  var q=parseFloat(document.getElementById('i-qty').value)||0;
+  var u=document.getElementById('i-unit').value;
+  document.getElementById('i-costo-unit').value=q?fmt(p/q)+' / '+u:'';
+}
+
+function openIngModal(id){
+
+  var ing=id?ingredienti.find(function(i){return i.id===id;}):null;
+  document.getElementById('edit-ing-id').value=id||'';
+  document.getElementById('modal-ing-title').textContent=ing?'Modifica Ingrediente':'Nuovo Ingrediente';
+  document.getElementById('i-nome').value=ing?ing.nome:'';
+  document.getElementById('i-cat').value=ing?ing.cat:'Distillati';
+  document.getElementById('i-unit').value=ing?ing.unit:'cl';
+  document.getElementById('i-unit-suffix').textContent=ing?ing.unit:'cl';
+  document.getElementById('i-prezzo').value=ing?ing.prezzo:'';
+  document.getElementById('i-qty').value=ing?ing.qty:'';
+  updateIngPreview();
+  document.getElementById('modal-ing').classList.remove('hidden');
+}
+
+async function saveIng(){
+  var nome=document.getElementById('i-nome').value.trim();
+  if(!nome){alert('Inserisci il nome');return;}
+
+  var id=document.getElementById('edit-ing-id').value;
+  var obj={id:id||uid(),nome:nome,cat:document.getElementById('i-cat').value,
+    unit:document.getElementById('i-unit').value,
+    prezzo:parseFloat(document.getElementById('i-prezzo').value)||0,
+    qty:parseFloat(document.getElementById('i-qty').value)||0};
+  if(id){ingredienti=ingredienti.map(function(i){return i.id===id?obj:i;});}
+  else{ingredienti.push(obj);}
+  await sbUpsertIngBar(obj);
+  if(id){ingredienti=ingredienti.map(function(i){return i.id===id?obj:i;});}else{ingredienti.push(obj);}
+  closeModal('modal-ing');
+  renderIngredienti();
+}
+
+async function deleteIng(id){
+
+  var ing=ingredienti.find(function(i){return i.id===id;});
+  if(!confirm('Eliminare "'+ing.nome+'"?'))return;
+  ingredienti=ingredienti.filter(function(i){return i.id!==id;});
+  sd('fcbar_ing',ingredienti);
+  getMenus().forEach(function(m){
+    sdCoc(m.id,ldCoc(m.id).map(function(c){
+      return Object.assign({},c,{ingredienti:(c.ingredienti||[]).filter(function(r){return r.id!==id;})});
+    }));
+  });
+  cocktail=ldCoc(currentMenuId);
+  renderIngredienti();
+}
+
+function renderIngredienti(){
+  var q=(document.getElementById('search-ing').value||'').toLowerCase();
+  var catFil=document.getElementById('filter-ing-cat').value||'';
+  var cats=[...new Set(ingredienti.map(function(i){return i.cat;}))].sort();
+  var selCat=document.getElementById('filter-ing-cat');
+  var cur=selCat.value;
+  selCat.innerHTML='<option value="">Tutte le categorie</option>'+cats.map(function(c){return '<option'+(c===cur?' selected':'')+'>'+c+'</option>';}).join('');
+  var statsEl=document.getElementById('stats-ing');
+  if(statsEl)statsEl.innerHTML=
+    '<div class="stat-card"><div class="stat-label">Ingredienti totali</div><div class="stat-value">'+ingredienti.length+'</div><div class="stat-sub">'+cats.length+' categorie</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Con prezzo impostato</div><div class="stat-value">'+ingredienti.filter(function(i){return i.prezzo>0&&i.qty>0;}).length+'</div><div class="stat-sub">costo/unita calcolato</div></div>';
+  var list=ingredienti.filter(function(i){
+    return (!q||i.nome.toLowerCase().indexOf(q)>=0||i.cat.toLowerCase().indexOf(q)>=0)&&(!catFil||i.cat===catFil);
+  }).sort(function(a,b){return a.cat.localeCompare(b.cat)||a.nome.localeCompare(b.nome);});
+  var lastCat='';
+  var rows=list.map(function(i){
+    var cu=costoUnitario(i);
+    var catRow='';
+    if(i.cat!==lastCat){
+      lastCat=i.cat;
+      catRow='<tr><td colspan="6" style="padding:10px 14px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--gold);font-weight:700;background:rgba(212,168,71,.04);border-bottom:1px solid var(--border)">'+i.cat+'</td></tr>';
+    }
+    return catRow+'<tr>'+
+      '<td><strong>'+i.nome+'</strong></td>'+
+      '<td style="color:var(--muted);font-size:12px">'+i.cat+'</td>'+
+      '<td class="td-right td-mono">'+(i.prezzo>0?fmt(i.prezzo):'<span style="color:var(--muted)">--</span>')+'</td>'+
+      '<td class="td-right td-mono">'+(i.qty>0?i.qty+' '+i.unit:'<span style="color:var(--muted)">--</span>')+'</td>'+
+      '<td class="td-right td-mono" style="color:var(--gold);font-weight:600">'+(cu>0?fmt(cu)+' / '+i.unit:'<span style="color:var(--muted)">--</span>')+'</td>'+
+      '<td class="td-center"><div style="display:flex;gap:4px;justify-content:center">'+
+        '<button class="btn-icon" title="Modifica" onclick="openIngModal(\''+i.id+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'+
+        '<button class="btn-icon" title="Elimina" style="color:var(--red)" onclick="deleteIng(\''+i.id+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>'+
+      '</div></td></tr>';
+  }).join('');
+  document.getElementById('ing-tbody').innerHTML=rows||'<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">Nessun ingrediente trovato</td></tr>';
+}
+
+/* ── MODAL CLOSE ──────────────────────────────────────────── */
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+document.querySelectorAll('.overlay').forEach(function(o){
+  o.addEventListener('click',function(e){if(e.target===o)o.classList.add('hidden');});
+});
+document.getElementById('c-prezzo').addEventListener('input',updateCostPreview);
+
+/* ── START ────────────────────────────────────────────────── */
+function waitForAuth(cb,n){
+  n=n||0;
+  if(n>60){cb();return;} // max 6 secondi
+  // Controlla se supabase è disponibile e ha una sessione
+  if(window.FC360_USER||window.FC360_SUPABASE){cb();return;}
+  if(window.supabase){
+    // Prova a vedere se c'è già una sessione senza aspettare auth-guard
+    window.supabase.createClient(
+      'https://lhzpueahpfpqkipwqlgk.supabase.co',
+      'sb_publishable_RcX37_4t0429HeaBRYs03w_C-53rBQV'
+    ).auth.getSession().then(function(s){
+      if(s.data&&s.data.session){cb();}
+      else{setTimeout(function(){waitForAuth(cb,n+1);},100);}
+    }).catch(function(){setTimeout(function(){waitForAuth(cb,n+1);},100);});
+    return;
+  }
+  setTimeout(function(){waitForAuth(cb,n+1);},100);
+}
+waitForAuth(function(){init();});
+</script>
+</body>
+</html>

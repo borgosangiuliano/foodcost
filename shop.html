@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acquista — FoodCost 360</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0C0C0E;--dark:#12121A;--card:#1A1A24;--border:#2A2A3E;
+  --text:#E8E8F0;--muted:#6B6B8A;--gold:#E8C547;--gold2:#C9A82C;
+  --green:#3EC97A;--red:#E05252;--blue:#3399FF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;min-height:100vh}
+
+/* NAV */
+nav{background:var(--dark);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;flex-direction:column;line-height:1;text-decoration:none}
+.nav-logo span:first-child{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--gold)}
+.nav-logo span:last-child{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:5px;color:#fff;text-align:center}
+.nav-back{color:var(--muted);font-size:13px;text-decoration:none;display:flex;align-items:center;gap:5px;transition:.15s}
+.nav-back:hover{color:var(--text)}
+
+/* HERO */
+.hero{text-align:center;padding:60px 24px 40px;max-width:700px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(232,197,71,.1);border:1px solid rgba(232,197,71,.25);color:var(--gold);font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;letter-spacing:.5px;margin-bottom:20px;text-transform:uppercase}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,58px);letter-spacing:1px;line-height:1.05;margin-bottom:16px}
+.hero h1 em{color:var(--gold);font-style:normal}
+.hero p{font-size:16px;color:var(--muted);line-height:1.7;max-width:500px;margin:0 auto}
+
+/* PIANI */
+.piani{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:960px;margin:0 auto;padding:20px 24px 60px}
+
+.piano{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;display:flex;flex-direction:column;position:relative;transition:.2s}
+.piano:hover{border-color:rgba(232,197,71,.2);transform:translateY(-2px)}
+.piano.featured{border-color:var(--gold);background:linear-gradient(160deg,#1e1e2a,#1a1a26)}
+
+.piano-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0C0C0E;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.5px;text-transform:uppercase}
+
+.piano-icon{font-size:36px;margin-bottom:14px}
+.piano-nome{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.5px;margin-bottom:6px}
+.piano-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;min-height:40px}
+
+.piano-prezzo{margin-bottom:20px}
+.piano-prezzo .importo{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--gold);line-height:1}
+.piano-prezzo .valuta{font-size:24px;vertical-align:super;color:var(--gold)}
+.piano-prezzo .note{font-size:12px;color:var(--muted);margin-top:4px}
+
+.piano-features{list-style:none;margin-bottom:24px;display:flex;flex-direction:column;gap:8px;flex:1}
+.piano-features li{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.4}
+.piano-features li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px}
+.piano-features li.no::before{content:'—';color:var(--border)}
+.piano-features li.no{color:var(--muted)}
+
+.tool-choice{border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:12px;font-weight:600;text-align:center;transition:.15s;color:var(--muted);background:var(--card)}
+.tool-choice:hover{border-color:var(--muted);color:var(--text)}
+.tool-choice.selected{border-color:var(--gold);color:var(--gold);background:rgba(232,197,71,.08)}border:1px solid rgba(62,201,122,.2);color:var(--green);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;display:inline-block;margin-bottom:16px}
+
+/* BOTTONI PAGAMENTO */
+.pay-wrap{display:flex;flex-direction:column;gap:8px}
+.btn-paypal{background:linear-gradient(135deg,#0070BA,#005ea6);color:#fff;border:none;border-radius:10px;padding:14px 20px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;text-decoration:none;width:100%}
+.btn-paypal:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-carta{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s;text-decoration:none;width:100%}
+.btn-carta:hover{border-color:var(--muted);color:var(--text)}
+
+/* PAYPAL LOGO SVG inline */
+.pp-logo{display:inline-flex;align-items:center;gap:3px}
+.pp-logo .pp1{color:#009CDE;font-weight:800;font-size:15px}
+.pp-logo .pp2{color:#012169;font-weight:800;font-size:15px}
+
+/* GARANZIE */
+.garanzie{background:var(--dark);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:32px 24px;margin-bottom:60px}
+.garanzie-inner{max-width:800px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px}
+.garanzia{text-align:center}
+.garanzia-icon{font-size:28px;margin-bottom:8px}
+.garanzia-title{font-weight:600;font-size:13px;margin-bottom:4px}
+.garanzia-desc{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* FAQ MINI */
+.faq-mini{max-width:640px;margin:0 auto;padding:0 24px 60px}
+.faq-mini h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.5px;text-align:center;margin-bottom:24px;color:var(--gold)}
+.faq-item{border-bottom:1px solid var(--border);padding:16px 0}
+.faq-q{font-weight:600;font-size:14px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px}
+.faq-q::before{content:'?';background:rgba(232,197,71,.15);color:var(--gold);width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.faq-a{font-size:13px;color:var(--muted);line-height:1.7;padding-left:28px}
+
+/* MODAL CHECKOUT */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:flex;align-items:flex-end;backdrop-filter:blur(4px)}
+.overlay.hidden{display:none}
+.modal{background:var(--dark);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding:24px}
+@media(min-width:580px){
+  .overlay{align-items:center;padding:20px}
+  .modal{border-radius:16px;max-width:460px;margin:auto;max-height:88vh}
+}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.5px;color:var(--gold)}
+.btn-close{background:none;border:1px solid var(--border);border-radius:6px;width:28px;height:28px;cursor:pointer;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.btn-close:hover{color:var(--text)}
+
+.riepilogo{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px}
+.riepilogo-row{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px}
+.riepilogo-row:last-child{margin-bottom:0;padding-top:10px;border-top:1px solid var(--border);font-weight:700;font-size:16px}
+.riepilogo-row span:last-child{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:22px}
+
+.istruzioni{background:rgba(232,197,71,.06);border:1px solid rgba(232,197,71,.15);border-radius:10px;padding:14px;margin-bottom:20px;font-size:12px;color:var(--muted);line-height:1.7}
+.istruzioni strong{color:var(--text)}
+
+.pay-options{display:flex;flex-direction:column;gap:10px}
+.btn-pay-main{background:linear-gradient(135deg,#0070BA,#005ea6);color:#fff;border:none;border-radius:10px;padding:16px 20px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;width:100%;text-decoration:none}
+.btn-pay-main:hover{filter:brightness(1.1)}
+.btn-pay-secondary{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:13px 20px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s;width:100%;text-decoration:none}
+.btn-pay-secondary:hover{border-color:var(--muted);color:var(--text)}
+.divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.sicuro{text-align:center;font-size:11px;color:var(--muted);margin-top:12px;display:flex;align-items:center;justify-content:center;gap:5px}
+
+/* FOOTER */
+footer{text-align:center;padding:32px 24px;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--text)}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .hero{padding:40px 16px 24px}
+  .piani{padding:16px 16px 40px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <span>FOODCOST</span>
+    <span>360</span>
+  </a>
+  <a href="index.html" class="nav-back">← Torna alla home</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🔒 Pagamento sicuro · Consegna immediata</div>
+  <h1>Scegli il tuo<br><em>pacchetto</em></h1>
+  <p>Paghi una volta. Il tool è tuo per sempre. Nessun abbonamento, nessuna sorpresa.</p>
+</div>
+
+<!-- PIANI -->
+<div class="piani">
+
+  <!-- PIANO 1: SINGOLO -->
+  <div class="piano">
+    <div class="piano-icon">🍳</div>
+    <div class="piano-nome">Tool Singolo</div>
+    <div class="piano-desc">Scegli il tool che ti serve adesso — Cucina, Bar o Menù QR Code.</div>
+    <div class="piano-prezzo">
+      <div><span class="valuta">da €</span><span class="importo">29</span></div>
+      <div class="note">pagamento unico · nessun abbonamento</div>
+    </div>
+    <ul class="piano-features">
+      <li>Un tool a scelta (Cucina, Bar o QR)</li>
+      <li>Analisi Menu integrata</li>
+      <li>Backup e ripristino dati</li>
+      <li>Aggiornamenti gratuiti</li>
+      <li>Supporto via WhatsApp</li>
+      <li class="no">Bundle Cucina + Bar</li>
+      <li class="no">Tutti e 3 i tool</li>
+    </ul>
+    <!-- SCELTA TOOL -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Quale tool vuoi?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <label style="cursor:pointer">
+          <input type="radio" name="tool-singolo" value="cucina" style="display:none">
+          <div class="tool-choice" id="choice-cucina" onclick="selezionaToolSingolo('cucina')">
+            🍳 Cucina<br><span style="font-size:10px;color:var(--gold)">€49</span>
+          </div>
+        </label>
+        <label style="cursor:pointer">
+          <input type="radio" name="tool-singolo" value="bar" style="display:none">
+          <div class="tool-choice" id="choice-bar" onclick="selezionaToolSingolo('bar')">
+            🍸 Bar<br><span style="font-size:10px;color:var(--gold)">€49</span>
+          </div>
+        </label>
+        <label style="cursor:pointer">
+          <input type="radio" name="tool-singolo" value="qr" style="display:none">
+          <div class="tool-choice" id="choice-qr" onclick="selezionaToolSingolo('qr')">
+            📱 QR<br><span style="font-size:10px;color:var(--gold)">€29</span>
+          </div>
+        </label>
+      </div>
+    </div>
+    <div class="pay-wrap">
+      <button class="btn-paypal" onclick="openCheckoutSingolo()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 4h10a4 4 0 014 4v1a4 4 0 01-4 4H9l-1 5H5L7 4z" fill="#fff" opacity=".9"/></svg>
+        Paga con PayPal
+      </button>
+      <button class="btn-carta" onclick="openCheckoutSingolo()">
+        💳 Paga con carta di credito
+      </button>
+    </div>
+  </div>
+
+  <!-- PIANO 2: BUNDLE — FEATURED -->
+  <div class="piano featured">
+    <div class="piano-badge">⭐ Più scelto</div>
+    <div class="piano-icon">🍳🍸</div>
+    <div class="piano-nome">Bundle Cucina + Bar</div>
+    <div class="piano-desc">Il pacchetto completo per chi gestisce sia la cucina che il bar.</div>
+    <div class="piano-prezzo">
+      <div><span class="valuta">€</span><span class="importo">79</span></div>
+      <div class="note">pagamento unico · nessun abbonamento</div>
+    </div>
+    <div class="risparmio">💰 Risparmi €19 rispetto ai singoli</div>
+    <ul class="piano-features">
+      <li>FoodCost Cucina completo</li>
+      <li>BeverageCost Bar completo</li>
+      <li>Analisi Menu su entrambi</li>
+      <li>Backup e ripristino dati</li>
+      <li>Aggiornamenti gratuiti</li>
+      <li>Supporto via WhatsApp</li>
+      <li class="no">Tool Menù QR Code</li>
+    </ul>
+    <div class="pay-wrap">
+      <button class="btn-paypal" onclick="openCheckout('bundle','Bundle Cucina + Bar',79)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 4h10a4 4 0 014 4v1a4 4 0 01-4 4H9l-1 5H5L7 4z" fill="#fff" opacity=".9"/></svg>
+        Paga con PayPal
+      </button>
+      <button class="btn-carta" onclick="openCheckout('bundle','Bundle Cucina + Bar',79)">
+        💳 Paga con carta di credito
+      </button>
+    </div>
+  </div>
+
+  <!-- PIANO 3: 360 COMPLETO -->
+  <div class="piano">
+    <div class="piano-icon">🚀</div>
+    <div class="piano-nome">Pacchetto 360</div>
+    <div class="piano-desc">Tutto incluso: cucina, bar e menù QR digitale per i tuoi tavoli.</div>
+    <div class="piano-prezzo">
+      <div><span class="valuta">€</span><span class="importo">119</span></div>
+      <div class="note">pagamento unico · nessun abbonamento</div>
+    </div>
+    <div class="risparmio">💰 Risparmi €28 rispetto ai singoli</div>
+    <ul class="piano-features">
+      <li>FoodCost Cucina completo</li>
+      <li>BeverageCost Bar completo</li>
+      <li>Tool Menù QR Code</li>
+      <li>Analisi Menu su tutti i tool</li>
+      <li>Backup e ripristino dati</li>
+      <li>Aggiornamenti gratuiti</li>
+      <li>Supporto prioritario WhatsApp</li>
+    </ul>
+    <div class="pay-wrap">
+      <button class="btn-paypal" onclick="openCheckout('360','Pacchetto 360 Completo',119)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 4h10a4 4 0 014 4v1a4 4 0 01-4 4H9l-1 5H5L7 4z" fill="#fff" opacity=".9"/></svg>
+        Paga con PayPal
+      </button>
+      <button class="btn-carta" onclick="openCheckout('360','Pacchetto 360 Completo',119)">
+        💳 Paga con carta di credito
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- GARANZIE -->
+<div class="garanzie">
+  <div class="garanzie-inner">
+    <div class="garanzia">
+      <div class="garanzia-icon">🔒</div>
+      <div class="garanzia-title">Pagamento sicuro</div>
+      <div class="garanzia-desc">PayPal protegge ogni transazione. Puoi pagare anche con carta senza avere un account PayPal.</div>
+    </div>
+    <div class="garanzia">
+      <div class="garanzia-icon">⚡</div>
+      <div class="garanzia-title">Consegna immediata</div>
+      <div class="garanzia-desc">Ricevi il tool via WhatsApp o email entro poche ore dal pagamento.</div>
+    </div>
+    <div class="garanzia">
+      <div class="garanzia-icon">♾️</div>
+      <div class="garanzia-title">Tuo per sempre</div>
+      <div class="garanzia-desc">Paghi una volta sola. Nessun abbonamento, nessuna scadenza, nessuna sorpresa.</div>
+    </div>
+    <div class="garanzia">
+      <div class="garanzia-icon">🛠</div>
+      <div class="garanzia-title">Supporto incluso</div>
+      <div class="garanzia-desc">Assistenza diretta via WhatsApp da un professionista con 25 anni di cucina.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVIZI EXTRA -->
+<div style="max-width:700px;margin:0 auto;padding:0 24px 60px;text-align:center">
+  <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Servizi aggiuntivi</div>
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.5px;margin-bottom:8px">Tu mandi il menù.<br>Io faccio tutto.</h2>
+  <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:28px">Mandi il PDF del tuo menù, io carico ricette e ingredienti nel tool. Tu apri e trovi già tutto pronto.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:500px;margin:0 auto">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px">
+      <div style="font-size:24px;margin-bottom:8px">📄</div>
+      <div style="font-weight:600;font-size:14px;margin-bottom:4px">Caricamento menù</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Carico io tutte le ricette e gli ingredienti nel tool</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);margin-bottom:10px">da €50</div>
+      <a href="https://wa.me/393288868704?text=Ciao!%20Vorrei%20il%20servizio%20di%20caricamento%20menù" target="_blank" style="display:block;background:rgba(232,197,71,.1);border:1px solid rgba(232,197,71,.25);color:var(--gold);border-radius:8px;padding:8px;font-size:12px;font-weight:600;text-decoration:none;transition:.15s">Contattami su WhatsApp →</a>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px">
+      <div style="font-size:24px;margin-bottom:8px">🔄</div>
+      <div style="font-weight:600;font-size:14px;margin-bottom:4px">Aggiornamento prezzi</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Aggiorno il listino ingredienti quando cambiano i prezzi</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);margin-bottom:10px">€25</div>
+      <a href="https://wa.me/393288868704?text=Ciao!%20Vorrei%20il%20servizio%20di%20aggiornamento%20prezzi" target="_blank" style="display:block;background:rgba(232,197,71,.1);border:1px solid rgba(232,197,71,.25);color:var(--gold);border-radius:8px;padding:8px;font-size:12px;font-weight:600;text-decoration:none;transition:.15s">Contattami su WhatsApp →</a>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ MINI -->
+<div class="faq-mini">
+  <h2>Domande frequenti</h2>
+  <div class="faq-item">
+    <div class="faq-q">Come ricevo il tool dopo il pagamento?</div>
+    <div class="faq-a">Entro poche ore ricevi un messaggio WhatsApp o email con il file e le istruzioni per iniziare. Se non lo ricevi entro 24h, scrivimi direttamente.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Posso pagare con carta senza avere PayPal?</div>
+    <div class="faq-a">Sì. Cliccando su "Paga con carta" si apre PayPal, ma puoi completare il pagamento con qualsiasi carta di credito o debito senza creare un account.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Il tool funziona su telefono?</div>
+    <div class="faq-a">Sì, funziona su qualsiasi browser — PC, Mac, tablet e smartphone. Non richiede installazione.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Cosa succede se ho bisogno di aiuto?</div>
+    <div class="faq-a">Supporto diretto via WhatsApp incluso nel prezzo. Sono un professionista con 25 anni in cucina — non un call center.</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div style="margin-bottom:8px">
+    <a href="index.html">Home</a> &nbsp;·&nbsp;
+    <a href="index.html#prova">Demo gratuita</a> &nbsp;·&nbsp;
+    <a href="mailto:info@foodcost360.it">info@foodcost360.it</a>
+  </div>
+  © 2026 FoodCost 360 · Nicola Barbanti · P.IVA in fase di registrazione
+</footer>
+
+<!-- MODAL CHECKOUT -->
+<div class="overlay hidden" id="modal-checkout">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Riepilogo ordine</div>
+      <button class="btn-close" onclick="closeCheckout()">✕</button>
+    </div>
+
+    <div class="riepilogo">
+      <div class="riepilogo-row">
+        <span id="co-nome">—</span>
+        <span id="co-prezzo">€0</span>
+      </div>
+      <div class="riepilogo-row" style="font-size:12px;color:var(--muted);font-weight:400;border:none;padding:0;margin-top:4px">
+        <span>Pagamento unico · nessun abbonamento</span>
+        <span style="color:var(--green);font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600">✓ Tuo per sempre</span>
+      </div>
+      <div class="riepilogo-row">
+        <span>Totale</span>
+        <span id="co-totale">€0</span>
+      </div>
+    </div>
+
+    <div class="istruzioni">
+      <strong>Come funziona:</strong><br>
+      1. Clicca su "Paga ora" — si apre PayPal<br>
+      2. Paga con il tuo account PayPal <strong>oppure con carta</strong> (nessun account necessario)<br>
+      3. Entro poche ore ricevi il tool via <strong>WhatsApp o email</strong><br>
+      4. Apri il file nel browser e sei subito operativo
+    </div>
+
+    <div class="pay-options">
+      <a id="btn-paypal-main" href="#" target="_blank" class="btn-pay-main" onclick="trackPagamento()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#fff" opacity=".15"/><path d="M8 6h6a4 4 0 014 4 4 4 0 01-4 4h-3l-1 4H7l2-12z" fill="#fff"/></svg>
+        Paga ora con PayPal
+      </a>
+      <div class="divider">oppure</div>
+      <a id="btn-carta-main" href="#" target="_blank" class="btn-pay-secondary" onclick="trackPagamento()">
+        💳 Paga con carta di credito / debito
+      </a>
+    </div>
+
+    <div class="sicuro">🔒 Pagamento sicuro · Protetto da PayPal · SSL
+    </div>
+  </div>
+</div>
+
+<script>
+var PAYPAL_ME='https://paypal.me/NicolaBarbanti';
+var WHATSAPP_NUM='393288868704'; // ← aggiorna con il tuo numero
+var toolSingoloScelto='';
+
+function selezionaToolSingolo(tool){
+  toolSingoloScelto=tool;
+  document.getElementById('choice-cucina').className='tool-choice'+(tool==='cucina'?' selected':'');
+  document.getElementById('choice-bar').className='tool-choice'+(tool==='bar'?' selected':'');
+  document.getElementById('choice-qr').className='tool-choice'+(tool==='qr'?' selected':'');
+}
+
+function openCheckoutSingolo(){
+  if(!toolSingoloScelto){
+    alert('Scegli prima quale tool vuoi: FoodCost Cucina, BeverageCost Bar o Menù QR Code');
+    return;
+  }
+  var nomi={cucina:'Singolo Cucina',bar:'Singolo Bar',qr:'Singolo QR Code'};
+  var prezzi={cucina:49,bar:49,qr:29};
+  var piani={cucina:'singolo-cucina',bar:'singolo-bar',qr:'singolo-qr'};
+  openCheckout(piani[toolSingoloScelto],nomi[toolSingoloScelto],prezzi[toolSingoloScelto]);
+}
+
+var prezzi={
+  'singolo':49,
+  'bundle':79,
+  '360':119
+};
+
+function openCheckout(tipo,nome,prezzo){
+  document.getElementById('co-nome').textContent=nome;
+  document.getElementById('co-prezzo').textContent='€'+prezzo;
+  document.getElementById('co-totale').textContent='€'+prezzo;
+
+  // Link PayPal.me con importo preimpostato
+  var linkPaypal=PAYPAL_ME+'/'+prezzo+'EUR';
+  // PayPal return url dopo pagamento (se usi PayPal business puoi impostarlo nel pannello)
+  
+  // Link PayPal per pagamento con carta (stesso link — PayPal mostra opzione carta)
+  var linkCarta=linkPaypal;
+
+  document.getElementById('btn-paypal-main').href=linkPaypal;
+  document.getElementById('btn-carta-main').href=linkCarta;
+
+  document.getElementById('modal-checkout').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+
+function closeCheckout(){
+  document.getElementById('modal-checkout').classList.add('hidden');
+  document.body.style.overflow='';
+}
+
+function trackPagamento(){
+  // Chiude il modal dopo click — il pagamento avviene su PayPal
+  setTimeout(function(){
+    closeCheckout();
+    // Mostra messaggio conferma
+    mostraConferma();
+  },300);
+}
+
+function mostraConferma(){
+  var msg=document.createElement('div');
+  msg.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1A1A26;border:1px solid rgba(62,201,122,.3);color:#3EC97A;padding:14px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.4)';
+  msg.innerHTML='✓ Reindirizzato a PayPal<br><span style="font-size:11px;color:#6B6B8A;font-weight:400">Dopo il pagamento riceverai il tool via WhatsApp</span>';
+  document.body.appendChild(msg);
+  setTimeout(function(){msg.remove();},4000);
+}
+
+// Chiudi cliccando fuori
+document.getElementById('modal-checkout').addEventListener('click',function(e){
+  if(e.target===this)closeCheckout();
+});
+</script>
+</body>
+</html>

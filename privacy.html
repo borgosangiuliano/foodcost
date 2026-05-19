@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy e Cookie Policy - FoodCost 360</title>
+<meta name="description" content="Privacy Policy e Cookie Policy di FoodCost 360. Informativa sul trattamento dei dati personali ai sensi del GDPR.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230C0C0E' rx='4'/%3E%3Ctext x='16' y='13' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='11' font-weight='700' fill='%23E8C547' letter-spacing='0.5'%3EFOOD%3C/text%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='11' font-weight='700' fill='%23E8C547' letter-spacing='0.5'%3ECOST%3C/text%3E%3Ctext x='16' y='30' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='8' font-weight='700' fill='%23ffffff' letter-spacing='1'%3E360%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0C0C0E;--dark:#12121A;--card:#1A1A24;--border:#2A2A3E;--text:#E8E8F0;--muted:#6B6B8A;--gold:#E8C547}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7}
+
+/* TOPBAR */
+.topbar{background:var(--dark);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{display:flex;flex-direction:column;line-height:1;text-decoration:none}
+.logo .l1{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--gold)}
+.logo .l2{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:#fff}
+.btn-home{background:linear-gradient(135deg,var(--gold),#C9A82C);color:#0C0C0E;border:none;border-radius:8px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none}
+
+/* CONTENUTO */
+.content{max-width:720px;margin:0 auto;padding:60px 24px}
+
+/* HERO */
+.hero{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border)}
+.hero-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:1px;color:var(--text);margin-bottom:12px}
+.hero-meta{font-size:13px;color:var(--muted)}
+
+/* NAVIGAZIONE INTERNA */
+.nav-interna{background:var(--dark);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px}
+.nav-interna h3{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.nav-interna ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.nav-interna a{color:var(--gold);text-decoration:none;font-size:14px}
+.nav-interna a:hover{text-decoration:underline}
+
+/* SEZIONI */
+.sezione{margin-bottom:48px}
+.sezione h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.5px;color:var(--gold);margin-bottom:16px;padding-top:8px}
+.sezione h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;margin-top:20px}
+.sezione p{color:var(--muted);margin-bottom:12px}
+.sezione p strong{color:var(--text)}
+.sezione ul{color:var(--muted);padding-left:20px;margin-bottom:12px}
+.sezione ul li{margin-bottom:6px}
+
+/* TABELLA COOKIE */
+.cookie-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.cookie-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border)}
+.cookie-table td{padding:10px 14px;border-bottom:1px solid rgba(42,42,62,.5);color:var(--muted);vertical-align:top}
+.cookie-table td:first-child{color:var(--text);font-weight:500}
+
+/* BOX INFO */
+.info-box{background:rgba(232,197,71,.06);border:1px solid rgba(232,197,71,.15);border-radius:10px;padding:16px 20px;margin:20px 0}
+.info-box p{color:var(--text);margin:0;font-size:14px}
+
+/* CONTATTI */
+.contatti{background:var(--dark);border:1px solid var(--border);border-radius:12px;padding:24px;margin-top:40px}
+.contatti h3{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);margin-bottom:12px}
+.contatti p{color:var(--muted);font-size:14px;margin-bottom:6px}
+.contatti a{color:var(--gold)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:24px;text-align:center;font-size:12px;color:var(--muted)}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--text)}
+
+@media(max-width:600px){
+  .hero h1{font-size:36px}
+  .content{padding:32px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="logo"><span class="l1">FOODCOST</span><span class="l2">360</span></a>
+  <a href="index.html" class="btn-home">← Torna al sito</a>
+</div>
+
+<div class="content">
+
+  <div class="hero">
+    <div class="hero-label">Documenti legali</div>
+    <h1>Privacy Policy e Cookie Policy</h1>
+    <div class="hero-meta">Ultimo aggiornamento: Aprile 2026 · Versione 1.0</div>
+  </div>
+
+  <div class="nav-interna">
+    <h3>In questa pagina</h3>
+    <ul>
+      <li><a href="#titolare">1. Titolare del trattamento</a></li>
+      <li><a href="#dati">2. Dati raccolti</a></li>
+      <li><a href="#finalita">3. Finalita del trattamento</a></li>
+      <li><a href="#base">4. Base giuridica</a></li>
+      <li><a href="#conservazione">5. Conservazione dei dati</a></li>
+      <li><a href="#terzi">6. Condivisione con terzi</a></li>
+      <li><a href="#diritti">7. Diritti dell'interessato</a></li>
+      <li><a href="#cookie">8. Cookie Policy</a></li>
+      <li><a href="#minori">9. Minori</a></li>
+      <li><a href="#modifiche">10. Modifiche alla policy</a></li>
+    </ul>
+  </div>
+
+  <div class="info-box">
+    <p>Questa informativa e redatta ai sensi del <strong>Regolamento UE 2016/679 (GDPR)</strong> e del D.Lgs. 196/2003 (Codice Privacy) come modificato dal D.Lgs. 101/2018.</p>
+  </div>
+
+  <!-- 1. TITOLARE -->
+  <div class="sezione" id="titolare">
+    <h2>1. Titolare del trattamento</h2>
+    <p><strong>Nicola Barbanti</strong><br>
+    Chef professionista - Rimini (RN), Italia<br>
+    Email: <a href="mailto:info@foodcost360.it" style="color:var(--gold)">info@foodcost360.it</a><br>
+    Sito web: <a href="https://foodcost360.it" style="color:var(--gold)">foodcost360.it</a></p>
+  </div>
+
+  <!-- 2. DATI RACCOLTI -->
+  <div class="sezione" id="dati">
+    <h2>2. Dati raccolti</h2>
+    <p>FoodCost 360 raccoglie dati in due modi distinti:</p>
+
+    <h3>2.1 Modulo richiesta demo gratuita</h3>
+    <p>Quando compili il modulo di richiesta demo, raccogliamo:</p>
+    <ul>
+      <li>Nome e cognome</li>
+      <li>Indirizzo email</li>
+      <li>Numero di telefono/WhatsApp</li>
+      <li>Tipo di locale (ristorante, bar, pizzeria, ecc.)</li>
+      <li>Citta</li>
+    </ul>
+
+    <h3>2.2 Registrazione account</h3>
+    <p>Per accedere ai tool a pagamento raccogliamo:</p>
+    <ul>
+      <li>Nome e cognome</li>
+      <li>Indirizzo email</li>
+      <li>Password (cifrata - non accessibile a nessuno)</li>
+    </ul>
+
+    <h3>2.3 Dati del tool (ricette, ingredienti, prezzi)</h3>
+    <p>I dati inseriti nei tool (ricette, ingredienti, prezzi, food cost) vengono salvati <strong>esclusivamente sul dispositivo dell'utente</strong> (localStorage del browser). Non vengono mai trasmessi a nessun server esterno. Il titolare non ha accesso a questi dati.</p>
+  </div>
+
+  <!-- 3. FINALITA -->
+  <div class="sezione" id="finalita">
+    <h2>3. Finalita del trattamento</h2>
+    <p>I dati vengono trattati per le seguenti finalita:</p>
+    <ul>
+      <li><strong>Invio della demo gratuita</strong> - via email o WhatsApp</li>
+      <li><strong>Gestione dell'account</strong> - accesso ai tool acquistati</li>
+      <li><strong>Comunicazioni commerciali</strong> - aggiornamenti su FoodCost 360 (solo con consenso esplicito)</li>
+      <li><strong>Assistenza tecnica</strong> - risposta a richieste di supporto</li>
+      <li><strong>Adempimenti legali</strong> - obblighi di legge</li>
+    </ul>
+  </div>
+
+  <!-- 4. BASE GIURIDICA -->
+  <div class="sezione" id="base">
+    <h2>4. Base giuridica</h2>
+    <p>Il trattamento si basa su:</p>
+    <ul>
+      <li><strong>Consenso esplicito</strong> (art. 6, par. 1, lett. a GDPR) - per la richiesta demo e le comunicazioni commerciali</li>
+      <li><strong>Esecuzione del contratto</strong> (art. 6, par. 1, lett. b GDPR) - per la gestione dell'account e l'accesso ai tool acquistati</li>
+      <li><strong>Obbligo legale</strong> (art. 6, par. 1, lett. c GDPR) - per adempimenti fiscali e amministrativi</li>
+    </ul>
+  </div>
+
+  <!-- 5. CONSERVAZIONE -->
+  <div class="sezione" id="conservazione">
+    <h2>5. Conservazione dei dati</h2>
+    <ul>
+      <li><strong>Dati modulo demo:</strong> conservati per un massimo di 24 mesi dall'ultima interazione</li>
+      <li><strong>Dati account:</strong> conservati fino alla cancellazione dell'account o alla revoca del consenso</li>
+      <li><strong>Dati acquisto:</strong> conservati per 10 anni per obblighi fiscali</li>
+    </ul>
+    <p>Puoi richiedere la cancellazione dei tuoi dati in qualsiasi momento scrivendo a <a href="mailto:info@foodcost360.it" style="color:var(--gold)">info@foodcost360.it</a>.</p>
+  </div>
+
+  <!-- 6. TERZI -->
+  <div class="sezione" id="terzi">
+    <h2>6. Condivisione con terzi</h2>
+    <p>I tuoi dati non vengono venduti, ceduti o comunicati a terzi per finalita commerciali.</p>
+    <p>Utilizziamo i seguenti servizi tecnici di terze parti:</p>
+    <ul>
+      <li><strong>Supabase</strong> (USA/EU) - gestione autenticazione e account. <a href="https://supabase.com/privacy" target="_blank" rel="noopener" style="color:var(--gold)">Privacy Policy Supabase</a></li>
+      <li><strong>Cloudflare</strong> (USA/EU) - hosting del sito. <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener" style="color:var(--gold)">Privacy Policy Cloudflare</a></li>
+      <li><strong>PayPal</strong> (USA/EU) - elaborazione pagamenti. <a href="https://www.paypal.com/it/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener" style="color:var(--gold)">Privacy Policy PayPal</a></li>
+      <li><strong>Google Fonts</strong> - caricamento font (dati tecnici anonimi)</li>
+    </ul>
+    <p>Tutti i fornitori trattano i dati nel rispetto del GDPR e dispongono di adeguate garanzie contrattuali.</p>
+  </div>
+
+  <!-- 7. DIRITTI -->
+  <div class="sezione" id="diritti">
+    <h2>7. Diritti dell'interessato</h2>
+    <p>Ai sensi degli artt. 15-22 del GDPR hai diritto di:</p>
+    <ul>
+      <li><strong>Accesso</strong> - ottenere copia dei tuoi dati personali</li>
+      <li><strong>Rettifica</strong> - correggere dati inesatti o incompleti</li>
+      <li><strong>Cancellazione</strong> - richiedere la cancellazione dei tuoi dati</li>
+      <li><strong>Limitazione</strong> - limitare il trattamento in determinate circostanze</li>
+      <li><strong>Opposizione</strong> - opporti al trattamento per motivi legittimi</li>
+      <li><strong>Portabilita</strong> - ricevere i tuoi dati in formato strutturato</li>
+      <li><strong>Revoca del consenso</strong> - in qualsiasi momento, senza pregiudizio</li>
+    </ul>
+    <p>Per esercitare i tuoi diritti scrivi a <a href="mailto:info@foodcost360.it" style="color:var(--gold)">info@foodcost360.it</a>. Risponderemo entro 30 giorni.</p>
+    <p>Hai anche il diritto di proporre reclamo al <strong>Garante per la protezione dei dati personali</strong> (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener" style="color:var(--gold)">garanteprivacy.it</a>).</p>
+  </div>
+
+  <!-- 8. COOKIE -->
+  <div class="sezione" id="cookie">
+    <h2>8. Cookie Policy</h2>
+    <p>Questa sezione descrive i cookie e le tecnologie di tracciamento utilizzate su foodcost360.it.</p>
+
+    <h3>Cosa sono i cookie</h3>
+    <p>I cookie sono piccoli file di testo che i siti web salvano sul tuo dispositivo quando li visiti. Vengono utilizzati per far funzionare il sito, migliorare l'esperienza utente e (in alcuni casi) raccogliere informazioni statistiche.</p>
+
+    <h3>Cookie tecnici (necessari)</h3>
+    <p>Utilizziamo esclusivamente cookie tecnici, necessari per il funzionamento del sito. Non richiedono consenso ai sensi dell'art. 122 del Codice Privacy.</p>
+
+    <table class="cookie-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Fornitore</th>
+          <th>Scopo</th>
+          <th>Durata</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>sb-*</td>
+          <td>Supabase</td>
+          <td>Gestione sessione di autenticazione</td>
+          <td>Sessione / 1 anno</td>
+        </tr>
+        <tr>
+          <td>__cf_bm</td>
+          <td>Cloudflare</td>
+          <td>Protezione da bot e sicurezza</td>
+          <td>30 minuti</td>
+        </tr>
+        <tr>
+          <td>_cfuvid</td>
+          <td>Cloudflare</td>
+          <td>Gestione del traffico e rate limiting</td>
+          <td>Sessione</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Cookie di profilazione e marketing</h3>
+    <p>FoodCost 360 <strong>non utilizza cookie di profilazione</strong>, di tracciamento comportamentale o di remarketing pubblicitario.</p>
+
+    <h3>LocalStorage</h3>
+    <p>I tool di FoodCost 360 utilizzano il <strong>localStorage</strong> del browser (non i cookie) per salvare i tuoi dati di lavoro (ricette, ingredienti, prezzi). Questi dati restano esclusivamente sul tuo dispositivo e non vengono mai trasmessi a server esterni. Puoi cancellarli in qualsiasi momento svuotando il localStorage del browser.</p>
+
+    <h3>Come gestire i cookie</h3>
+    <p>Puoi controllare e cancellare i cookie tramite le impostazioni del tuo browser:</p>
+    <ul>
+      <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener" style="color:var(--gold)">Google Chrome</a></li>
+      <li><a href="https://support.mozilla.org/it/kb/protezione-antitracciamento-avanzata-firefox" target="_blank" rel="noopener" style="color:var(--gold)">Mozilla Firefox</a></li>
+      <li><a href="https://support.apple.com/it-it/guide/safari/sfri11471/mac" target="_blank" rel="noopener" style="color:var(--gold)">Apple Safari</a></li>
+      <li><a href="https://support.microsoft.com/it-it/microsoft-edge/eliminare-i-cookie-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener" style="color:var(--gold)">Microsoft Edge</a></li>
+    </ul>
+    <p style="margin-top:12px">Nota: disabilitare i cookie tecnici potrebbe compromettere il funzionamento del login e dell'accesso ai tool.</p>
+  </div>
+
+  <!-- 9. MINORI -->
+  <div class="sezione" id="minori">
+    <h2>9. Minori</h2>
+    <p>FoodCost 360 e un servizio rivolto a professionisti della ristorazione. Non raccogliamo consapevolmente dati personali di minori di 16 anni. Se sei un genitore o tutore e ritieni che tuo figlio ci abbia fornito dati personali, contattaci a <a href="mailto:info@foodcost360.it" style="color:var(--gold)">info@foodcost360.it</a> e provvederemo alla cancellazione immediata.</p>
+  </div>
+
+  <!-- 10. MODIFICHE -->
+  <div class="sezione" id="modifiche">
+    <h2>10. Modifiche alla policy</h2>
+    <p>Ci riserviamo di aggiornare questa informativa in caso di modifiche normative o operative. Le modifiche saranno pubblicate su questa pagina con la data di aggiornamento. Per modifiche sostanziali, informeremo gli utenti registrati via email.</p>
+    <p>L'uso continuato del sito dopo la pubblicazione delle modifiche costituisce accettazione della nuova informativa.</p>
+  </div>
+
+  <!-- CONTATTI -->
+  <div class="contatti">
+    <h3>Hai domande sulla privacy?</h3>
+    <p>Scrivi a <a href="mailto:info@foodcost360.it">info@foodcost360.it</a> - rispondo entro 48 ore.</p>
+    <p style="margin-top:8px;font-size:13px">Per richieste urgenti puoi anche contattarmi via WhatsApp (numero disponibile su richiesta).</p>
+  </div>
+
+</div>
+
+<footer>
+  <a href="index.html">← Torna a FoodCost 360</a>
+  &nbsp;·&nbsp;
+  <a href="shop.html">Acquista</a>
+  &nbsp;·&nbsp;
+  <span>© 2026 FoodCost 360 - Nicola Barbanti</span>
+</footer>
+
+</body>
+</html>

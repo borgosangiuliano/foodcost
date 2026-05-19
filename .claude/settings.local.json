@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\nicol\\\\Desktop\\\\foodcost360\" -Recurse -Force | Where-Object { $_.PSIsContainer -eq $false } | Select-Object -ExpandProperty FullName | ForEach-Object { $_.Replace\\('C:\\\\Users\\\\nicol\\\\Desktop\\\\foodcost360\\\\', ''\\) } | Sort-Object)",
+      "Bash(git add *)"
+    ]
+  }
+}

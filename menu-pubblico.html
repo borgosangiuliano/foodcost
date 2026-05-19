@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu — FoodCost 360</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Lato:wght@300;400;700&family=Merriweather:wght@300;400;700&family=Playfair+Display:wght@400;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style id="dynamic-style">
+/* Stili base — verranno sovrascritti dai colori del ristorante */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:#0A0A0F;color:#E8E8F0;font-family:'DM Sans',sans-serif;padding-bottom:48px}
+.hdr{background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,.08);padding:28px 20px;text-align:center}
+.logo-img{max-width:120px;max-height:80px;object-fit:contain;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto}
+.hn{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:3px;color:#E8C547}
+.hs{font-size:13px;color:rgba(255,255,255,.4);margin-top:4px}
+.hi{font-size:12px;color:rgba(255,255,255,.4);margin-top:3px}
+.wrap{max-width:600px;margin:0 auto;padding:0}
+
+/* TAB NAVIGAZIONE */
+.menu-tabs{display:flex;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:10}
+.menu-tab{flex:1;padding:12px 8px;text-align:center;font-size:12px;font-weight:700;cursor:pointer;color:rgba(255,255,255,.4);border:none;background:transparent;border-bottom:2px solid transparent;transition:.2s;font-family:'DM Sans',sans-serif}
+.menu-tab.on{color:#E8C547;border-bottom-color:#E8C547}
+.menu-section{display:none;padding:0 16px}
+.menu-section.on{display:block}
+
+/* CATEGORIA */
+.cat-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#E8C547;margin:24px 0 10px;padding-bottom:8px;border-bottom:2px solid rgba(255,255,255,.08)}
+
+/* PIATTO */
+.pi{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.pi:last-child{border-bottom:none}
+.pib{flex:1;margin-right:14px}
+.pn{font-size:14px;font-weight:600;color:#E8E8F0}
+.pd{font-size:12px;color:rgba(255,255,255,.4);margin-top:3px;line-height:1.5}
+.pp{font-size:15px;font-weight:700;color:#E8C547;flex-shrink:0;padding-top:2px}
+
+/* LOADING / ERRORE */
+.loading-screen{position:fixed;inset:0;background:#0A0A0F;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.sp{width:36px;height:36px;border:3px solid rgba(232,197,71,.2);border-top-color:#E8C547;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:rgba(255,255,255,.4);font-size:13px;font-family:'DM Sans',sans-serif}
+
+.errore-screen{padding:60px 20px;text-align:center}
+.errore-ico{font-size:48px;margin-bottom:16px}
+.errore-titolo{font-size:20px;font-weight:700;color:#E8E8F0;margin-bottom:8px}
+.errore-msg{font-size:13px;color:rgba(255,255,255,.4);line-height:1.6}
+
+.ft{text-align:center;padding:32px 16px;font-size:11px;color:rgba(255,255,255,.15)}
+.empty-section{padding:32px 16px;text-align:center;font-size:13px;color:rgba(255,255,255,.3)}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loading">
+  <div class="sp"></div>
+  <div class="loading-text">Caricamento menu...</div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="hdr" id="hdr">
+    <div id="logo-box"></div>
+    <div class="hn" id="nome-locale">Menu</div>
+    <div class="hs" id="tagline"></div>
+    <div class="hi" id="info-addr"></div>
+    <div class="hi" id="info-tel"></div>
+  </div>
+
+  <div class="wrap">
+    <div class="menu-tabs" id="menu-tabs"></div>
+    <div id="sezioni"></div>
+    <div class="ft">Menu digitale · FoodCost 360</div>
+  </div>
+</div>
+
+<div id="errore" style="display:none">
+  <div class="errore-screen">
+    <div class="errore-ico">🔍</div>
+    <div class="errore-titolo">Menu non trovato</div>
+    <div class="errore-msg">Il menu che stai cercando non esiste o non è ancora stato pubblicato.</div>
+  </div>
+</div>
+
+<script>
+var _sb = window.supabase.createClient(
+  'https://lhzpueahpfpqkipwqlgk.supabase.co',
+  'sb_publishable_RcX37_4t0429HeaBRYs03w_C-53rBQV'
+);
+
+// Leggi lo slug dall'URL: /menu/nomelocale
+// Leggi slug dall'hash fragment (es. #circus-bistrot)
+// Cloudflare _redirects con proxy 200 non tocca il fragment
+var slug = window.location.hash.replace(/^#/,'').trim();
+
+// Fallback: query string
+if(!slug) slug = new URLSearchParams(window.location.search).get('slug') || '';
+
+async function caricaMenu(){
+  if(!slug){
+    mostraErrore();return;
+  }
+  var res = await _sb.from('menu_qr').select('*').eq('slug',slug).single();
+  if(res.error||!res.data){
+    mostraErrore();return;
+  }
+  renderMenu(res.data);
+}
+
+function applicaStile(aspetto){
+  if(!aspetto)return;
+  var bg=aspetto.bg||'#0A0A0F';
+  var tx=aspetto.text||'#E8E8F0';
+  var ac=aspetto.accent||'#E8C547';
+  var fn=aspetto.font||'DM Sans';
+  var isLight=bg==='#FFFFFF'||bg==='#FAF7F0';
+  var muted=isLight?'rgba(0,0,0,0.45)':'rgba(255,255,255,0.4)';
+  var border=isLight?'rgba(0,0,0,0.08)':'rgba(255,255,255,0.06)';
+  var hdrBg=isLight?'rgba(0,0,0,0.04)':'rgba(255,255,255,0.05)';
+  var tabBg=isLight?'rgba(0,0,0,0.04)':'rgba(255,255,255,0.05)';
+
+  document.body.style.background=bg;
+  document.body.style.color=tx;
+  document.body.style.fontFamily="'"+fn+"',sans-serif";
+
+  var css=
+    '.hn{color:'+ac+'!important}'+
+    '.hdr{background:'+hdrBg+'!important;border-bottom-color:'+border+'!important}'+
+    '.hs,.hi{color:'+muted+'!important}'+
+    '.menu-tabs{background:'+tabBg+'!important;border-bottom-color:'+border+'!important}'+
+    '.menu-tab{color:'+muted+'!important}'+
+    '.menu-tab.on{color:'+ac+'!important;border-bottom-color:'+ac+'!important}'+
+    '.cat-title{color:'+ac+'!important;border-bottom-color:'+border+'!important}'+
+    '.pi{border-bottom-color:'+border+'!important}'+
+    '.pn{color:'+tx+'!important}'+
+    '.pd{color:'+muted+'!important}'+
+    '.pp{color:'+ac+'!important}'+
+    '.empty-section{color:'+muted+'!important}'+
+    '.ft{color:'+border+'!important}'+
+    '.loading-screen{background:'+bg+'!important}'+
+    'html,body{background:'+bg+'!important}';
+
+  document.getElementById('dynamic-style').textContent += css;
+}
+
+function renderMenu(data){
+  var aspetto = data.aspetto || {};
+  applicaStile(aspetto);
+
+  // Header
+  document.title = (data.nome_locale||'Menu') + ' — Menu Digitale';
+  document.getElementById('nome-locale').textContent = data.nome_locale || 'IL NOSTRO MENU';
+  if(data.tagline) document.getElementById('tagline').textContent = data.tagline;
+  if(data.indirizzo) document.getElementById('info-addr').innerHTML = '📍 '+data.indirizzo;
+  if(data.telefono) document.getElementById('info-tel').innerHTML = '📞 '+data.telefono;
+  if(data.logo){
+    document.getElementById('logo-box').innerHTML='<img src="'+data.logo+'" class="logo-img" alt="Logo">';
+  }
+
+  // Sezioni
+  var sezioni=[
+    {id:'cucina',icon:'🍳',label:'Cucina',piatti:data.piatti_cucina||[]},
+    {id:'bar',icon:'🍸',label:'Bar',piatti:data.piatti_bar||[]},
+    {id:'caffe',icon:'☕',label:'Caffè',piatti:data.piatti_caffe||[]}
+  ].filter(function(s){
+    return (s.piatti||[]).filter(function(p){return p.vis!==false;}).length>0;
+  });
+
+  if(!sezioni.length){
+    document.getElementById('sezioni').innerHTML='<div class="empty-section" style="padding:60px 20px">Menu in aggiornamento. Torna a breve!</div>';
+    document.getElementById('loading').style.display='none';
+    document.getElementById('app').style.display='block';
+    return;
+  }
+
+  // Tabs
+  var tabsHtml = sezioni.map(function(s,i){
+    return '<button class="menu-tab'+(i===0?' on':'')+'" onclick="switchTab(\''+s.id+'\')" id="tab-'+s.id+'">'+s.icon+' '+s.label+'</button>';
+  }).join('');
+  document.getElementById('menu-tabs').innerHTML = tabsHtml;
+
+  // Contenuto
+  var sezioniHtml = sezioni.map(function(s,i){
+    var vis = (s.piatti||[]).filter(function(p){return p.vis!==false;});
+    var cats = [...new Set(vis.map(function(p){return p.cat||'Altro';}))].sort();
+    var html = '<div class="menu-section'+(i===0?' on':'')+'" id="sez-'+s.id+'">';
+    cats.forEach(function(cat){
+      var items=vis.filter(function(p){return(p.cat||'Altro')===cat;});
+      if(!items.length)return;
+      html+='<div class="cat-title">'+cat+'</div>';
+      items.forEach(function(p){
+        html+='<div class="pi"><div class="pib"><div class="pn">'+p.nome+'</div>';
+        if(p.desc)html+='<div class="pd">'+p.desc+'</div>';
+        html+='</div>'+(p.prezzo>0?'<div class="pp">€'+parseFloat(p.prezzo).toFixed(2)+'</div>':'')+'</div>';
+      });
+    });
+    html+='</div>';
+    return html;
+  }).join('');
+  document.getElementById('sezioni').innerHTML=sezioniHtml;
+
+  document.getElementById('loading').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+
+function switchTab(id){
+  document.querySelectorAll('.menu-tab').forEach(function(t){t.classList.remove('on');});
+  document.querySelectorAll('.menu-section').forEach(function(s){s.classList.remove('on');});
+  var tab=document.getElementById('tab-'+id);
+  var sez=document.getElementById('sez-'+id);
+  if(tab)tab.classList.add('on');
+  if(sez)sez.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function mostraErrore(){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('errore').style.display='block';
+}
+
+caricaMenu();
+</script>
+</body>
+</html>

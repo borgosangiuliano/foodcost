@@ -1,0 +1,30 @@
+{
+  "name": "FoodCost 360",
+  "short_name": "FC360",
+  "description": "Gestisci i costi del tuo ristorante",
+  "start_url": "/app/dashboard.html",
+  "display": "standalone",
+  "background_color": "#0C0C0E",
+  "theme_color": "#0C0C0E",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/app/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/app/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "lang": "it"
+}

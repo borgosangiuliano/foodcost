@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — FoodCost 360</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230C0C0E' rx='4'/%3E%3Ctext x='16' y='13' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='11' font-weight='700' fill='%23E8C547' letter-spacing='0.5'%3EFOOD%3C/text%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='11' font-weight='700' fill='%23E8C547' letter-spacing='0.5'%3ECOST%3C/text%3E%3Ctext x='16' y='30' text-anchor='middle' font-family='Arial Narrow,Arial,sans-serif' font-size='8' font-weight='700' fill='%23ffffff' letter-spacing='1'%3E360%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0C0C0E;--dark:#12121A;--card:#1A1A24;--border:#2A2A3E;--text:#E8E8F0;--muted:#6B6B8A;--gold:#E8C547;--gold2:#C9A82C;--green:#3EC97A;--red:#E05252;--orange:#E89520}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px}
+.admin-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-box{background:var(--dark);border:1px solid var(--border);border-radius:16px;padding:32px 28px;width:100%;max-width:360px;text-align:center}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;text-align:left}
+.fg label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.fg input{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;width:100%}
+.fg input:focus{border-color:rgba(232,197,71,.5)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0C0C0E;border:none;border-radius:10px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:4px}
+.btn-google{background:#1A1A24;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-google:hover{border-color:var(--muted)}
+.err{color:var(--red);font-size:12px;margin-top:8px}
+.divider{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin:10px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.dashboard{display:none}
+.topbar{background:var(--dark);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-logo{display:flex;flex-direction:column;line-height:1}
+.topbar-logo .l1{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--gold)}
+.topbar-logo .l2{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:#fff}
+.btn-sm{padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:.15s}
+.btn-sm:hover{color:var(--text)}
+.content{padding:20px;max-width:1000px;margin:0 auto}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:var(--dark);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold)}
+.stat-lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.card{background:var(--dark);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+.notif-badge{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;font-family:'DM Sans',sans-serif;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:11px 16px;border-bottom:1px solid rgba(42,42,62,.5);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+tr.nuova td{background:rgba(232,197,71,.04)}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px}
+.badge-attivo{background:rgba(62,201,122,.12);color:var(--green);border:1px solid rgba(62,201,122,.25)}
+.badge-inattivo{background:rgba(107,107,138,.12);color:var(--muted);border:1px solid rgba(107,107,138,.25)}
+.badge-nuovo{background:rgba(232,197,71,.12);color:var(--gold);border:1px solid rgba(232,197,71,.25)}
+.badge-piano{background:rgba(51,153,255,.12);color:#3399FF;border:1px solid rgba(51,153,255,.25)}
+.btn-attiva{background:rgba(62,201,122,.1);color:var(--green);border:1px solid rgba(62,201,122,.3);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s;white-space:nowrap}
+.btn-attiva:hover{background:rgba(62,201,122,.25)}
+.btn-disattiva{background:rgba(224,82,82,.1);color:var(--red);border:1px solid rgba(224,82,82,.3);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.btn-disattiva:hover{background:rgba(224,82,82,.25)}
+.select-piano{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;cursor:pointer}
+.add-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;padding:14px 18px;border-bottom:1px solid var(--border);background:rgba(232,197,71,.03)}
+.add-form input,.add-form select{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
+.add-form input:focus{border-color:rgba(232,197,71,.4)}
+
+@media(max-width:600px){
+  /* TOPBAR — tutto su una riga compatta */
+  .topbar{padding:8px 12px;gap:6px}
+  .topbar-logo .l1{font-size:14px;letter-spacing:1px}
+  .topbar-logo .l2{font-size:11px;letter-spacing:3px}
+  #admin-label{display:none} /* nasconde email admin su mobile — troppo lunga */
+  .topbar > div:last-child{display:flex;gap:5px;flex-shrink:0}
+  .btn-sm{padding:5px 10px;font-size:11px}
+  .content{padding:10px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  /* ADD FORM — colonna singola su mobile */
+  .add-form{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding:12px 14px
+  }
+  .add-form input,.add-form select{width:100%}
+  .btn-add{width:100%;padding:11px}
+  /* TABELLA — scroll orizzontale */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:500px}
+  th,td{padding:9px 10px;font-size:12px}
+  /* CARD HEADER su mobile */
+  .card-header{flex-wrap:wrap;gap:8px}
+  .card-title{font-size:16px}
+}
+.btn-add{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0C0C0E;border:none;border-radius:8px;padding:9px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.empty-row td{text-align:center;padding:32px;color:var(--muted)}
+.toast{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast-item{background:var(--dark);border:1px solid rgba(62,201,122,.4);color:var(--green);padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;animation:slideIn .3s ease;pointer-events:all;max-width:320px}
+.toast-item.warn{border-color:rgba(232,197,71,.4);color:var(--gold)}
+.toast-item.err{border-color:rgba(224,82,82,.4);color:var(--red)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+/* Notifica nuovi utenti */
+.notif-banner{background:rgba(232,197,71,.08);border:1px solid rgba(232,197,71,.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:none;align-items:center;justify-content:space-between;gap:12px}
+.notif-banner p{font-size:13px;color:var(--gold);font-weight:500}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="admin-login" id="admin-login">
+  <div class="login-box">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);line-height:1">FOODCOST</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:5px;margin-bottom:20px">360 ADMIN</div>
+    <div class="fg">
+      <label>Email admin</label>
+      <input type="email" id="a-email" placeholder="la tua email" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <div style="position:relative">
+        <input type="password" id="a-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:42px">
+        <button onclick="togglePwd()" type="button" id="pwd-eye" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#6B6B8A;font-size:16px;padding:4px;line-height:1">👁</button>
+      </div>
+    </div>
+    <button class="btn-gold" onclick="doLogin()">Accedi</button>
+    <div class="divider">oppure</div>
+    <button class="btn-google" onclick="doGoogle()">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Accedi con Google
+    </button>
+    <div class="err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo"><span class="l1">FOODCOST</span><span class="l2">360</span></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:12px;color:var(--muted)" id="admin-label"></span>
+      <button class="btn-sm" onclick="loadAll()">🔄 Aggiorna</button>
+      <button class="btn-sm" onclick="doLogout()">Esci</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- BANNER NUOVI UTENTI -->
+    <div class="notif-banner" id="notif-banner">
+      <p>🔔 <span id="notif-text"></span></p>
+      <button class="btn-sm" onclick="document.getElementById('notif-banner').style.display='none'">✕</button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num" id="s-reg">—</div><div class="stat-lab">Registrati</div></div>
+      <div class="stat"><div class="stat-num" id="s-att" style="color:var(--green)">—</div><div class="stat-lab">Attivi</div></div>
+      <div class="stat"><div class="stat-num" id="s-new" style="color:var(--gold)">—</div><div class="stat-lab">In attesa</div></div>
+      <div class="stat"><div class="stat-num" id="s-360" style="color:#3399FF">—</div><div class="stat-lab">Piano 360</div></div>
+    </div>
+
+    <!-- NUOVI — IN ATTESA DI ATTIVAZIONE -->
+    <div class="card" id="card-nuovi" style="display:none">
+      <div class="card-header">
+        <div class="card-title">
+          🔔 In attesa di attivazione
+          <span class="notif-badge" id="badge-nuovi">0</span>
+        </div>
+        <button class="btn-sm" onclick="attivatutti()">✓ Attiva tutti</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Email</th><th>Nome</th><th>Registrato il</th><th>Piano</th><th>Azioni</th>
+          </tr></thead>
+          <tbody id="tbody-nuovi"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TUTTI GLI UTENTI -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">👥 Tutti gli utenti</div>
+        <button class="btn-sm" onclick="loadAll()">🔄</button>
+      </div>
+      <!-- AGGIUNGI MANUALE -->
+      <div class="add-form">
+        <input type="email" id="new-email" placeholder="email@cliente.it">
+        <select id="new-piano">
+          <option value="singolo-cucina">Singolo Cucina — €49</option>
+          <option value="singolo-bar">Singolo Bar — €49</option>
+          <option value="singolo-qr">Singolo QR Code — €29</option>
+          <option value="bundle">Bundle Cucina+Bar — €79</option>
+          <option value="360" selected>Pacchetto 360 — €119</option>
+        </select>
+        <button class="btn-add" onclick="aggiungiAccesso()">+ Aggiungi</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Email</th><th>Nome</th><th>Piano</th><th>Stato</th><th>Registrato</th><th>Azioni</th>
+          </tr></thead>
+          <tbody id="tbody-tutti"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast-container"></div>
+
+<script>
+var SUPABASE_URL='https://lhzpueahpfpqkipwqlgk.supabase.co';
+var SUPABASE_KEY='sb_publishable_RcX37_4t0429HeaBRYs03w_C-53rBQV';
+var ADMIN_EMAIL='borgosangiuliano@gmail.com';
+var client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+var currentUser=null;
+var prevNuovi=0;
+
+/* ── LOGIN ─────────────────────────────────────────────── */
+function togglePwd(){
+  var i=document.getElementById('a-pwd'),b=document.getElementById('pwd-eye');
+  i.type=i.type==='password'?'text':'password';
+  b.textContent=i.type==='password'?'👁':'🙈';
+}
+
+async function doLogin(){
+  var email=document.getElementById('a-email').value.trim();
+  var pwd=document.getElementById('a-pwd').value;
+  var err=document.getElementById('login-err');
+  err.textContent='';
+  var res=await client.auth.signInWithPassword({email:email,password:pwd});
+  if(res.error){err.textContent='Credenziali non corrette';return;}
+  if(res.data.user.email!==ADMIN_EMAIL){
+    await client.auth.signOut();
+    err.textContent='Account non autorizzato come admin';
+    return;
+  }
+  currentUser=res.data.user;
+  showDashboard();
+}
+
+async function doGoogle(){
+  await client.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:window.location.href}
+  });
+}
+
+async function doLogout(){
+  await client.auth.signOut();
+  location.reload();
+}
+
+function showDashboard(){
+  document.getElementById('admin-login').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('admin-label').textContent=currentUser.email;
+  loadAll();
+  avviaRealtime();
+}
+
+/* ── CARICA DATI ───────────────────────────────────────── */
+async function loadAll(){
+  // 1. Tutti gli utenti registrati in auth (via tabella accessi + quelli senza accesso)
+  var resAccessi=await client.from('accessi').select('*').order('created_at',{ascending:false});
+  var accessi=resAccessi.data||[];
+
+  // 2. Stats
+  var attivi=accessi.filter(function(u){return u.attivo;});
+  var inAttesa=accessi.filter(function(u){return !u.attivo;});
+  var piano360=accessi.filter(function(u){return u.piano==='360';});
+  document.getElementById('s-reg').textContent=accessi.length;
+  document.getElementById('s-att').textContent=attivi.length;
+  document.getElementById('s-new').textContent=inAttesa.length;
+  document.getElementById('s-360').textContent=piano360.length;
+
+  // 3. Card "in attesa"
+  var cardNuovi=document.getElementById('card-nuovi');
+  var badgeNuovi=document.getElementById('badge-nuovi');
+  if(inAttesa.length>0){
+    cardNuovi.style.display='block';
+    badgeNuovi.textContent=inAttesa.length;
+    // Notifica se aumentati
+    if(inAttesa.length>prevNuovi&&prevNuovi>0){
+      var diff=inAttesa.length-prevNuovi;
+      mostraBanner(diff+' nuov'+(diff===1?'o':'i')+' utente'+(diff===1?'':'i')+' in attesa di attivazione!');
+      showToast('🔔 '+diff+' nuova richiesta!','warn');
+    }
+    prevNuovi=inAttesa.length;
+  } else {
+    cardNuovi.style.display='none';
+  }
+
+  // 4. Tbody nuovi
+  document.getElementById('tbody-nuovi').innerHTML=inAttesa.length?inAttesa.map(function(u){
+    var dt=u.created_at?new Date(u.created_at).toLocaleDateString('it-IT'):'—';
+    return '<tr class="nuova">'+
+      '<td style="font-size:12px">'+u.email+'</td>'+
+      '<td>'+(u.nome||'—')+'</td>'+
+      '<td style="color:var(--muted);font-size:12px">'+dt+'</td>'+
+      '<td><select class="select-piano" onchange="cambiaPiano(\''+u.id+'\',this.value)">'+
+        '<option value="singolo-cucina"'+(u.piano==='singolo-cucina'?' selected':'')+'>Singolo Cucina</option>'+
+        '<option value="singolo-bar"'+(u.piano==='singolo-bar'?' selected':'')+'>Singolo Bar</option>'+
+        '<option value="singolo-qr"'+(u.piano==='singolo-qr'?' selected':'')+'>Singolo QR</option>'+
+        '<option value="bundle"'+(u.piano==='bundle'?' selected':'')+'>Bundle</option>'+
+        '<option value="360"'+(u.piano==='360'?' selected':'')+'>360</option>'+
+      '</select></td>'+
+      '<td><button class="btn-attiva" onclick="attivaUtente(\''+u.id+'\',\''+u.email+'\')">✓ Attiva accesso</button></td>'+
+    '</tr>';
+  }).join(''):'<tr class="empty-row"><td colspan="5">Nessun utente in attesa</td></tr>';
+
+  // 5. Tbody tutti
+  document.getElementById('tbody-tutti').innerHTML=accessi.length?accessi.map(function(u){
+    var dt=u.created_at?new Date(u.created_at).toLocaleDateString('it-IT'):'—';
+    return '<tr>'+
+      '<td style="font-size:12px">'+u.email+'</td>'+
+      '<td>'+(u.nome||'—')+'</td>'+
+      '<td><span class="badge badge-piano">'+(u.piano||'—')+'</span></td>'+
+      '<td><span class="badge '+(u.attivo?'badge-attivo':'badge-inattivo')+'">'+(u.attivo?'✓ Attivo':'In attesa')+'</span></td>'+
+      '<td style="color:var(--muted);font-size:12px">'+dt+'</td>'+
+      '<td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+
+        (u.attivo
+          ?'<button class="btn-disattiva" onclick="toggleAttivo(\''+u.id+'\',false)">Disattiva</button>'
+          :'<button class="btn-attiva" onclick="attivaUtente(\''+u.id+'\',\''+u.email+'\')">✓ Attiva</button>'
+        )+
+        '<select class="select-piano" onchange="cambiaPiano(\''+u.id+'\',this.value)">'+
+          '<option value="singolo-cucina"'+(u.piano==='singolo-cucina'?' selected':'')+'>Singolo Cucina</option>'+
+        '<option value="singolo-bar"'+(u.piano==='singolo-bar'?' selected':'')+'>Singolo Bar</option>'+
+          '<option value="bundle"'+(u.piano==='bundle'?' selected':'')+'>Bundle</option>'+
+          '<option value="360"'+(u.piano==='360'?' selected':'')+'>360</option>'+
+        '</select>'+
+      '</td>'+
+    '</tr>';
+  }).join(''):'<tr class="empty-row"><td colspan="6">Nessun utente</td></tr>';
+}
+
+/* ── AZIONI ────────────────────────────────────────────── */
+async function attivaUtente(id,email){
+  await client.from('accessi').update({attivo:true}).eq('id',id);
+  showToast('✓ '+email+' attivato!');
+  loadAll();
+}
+
+async function toggleAttivo(id,attivo){
+  await client.from('accessi').update({attivo:attivo}).eq('id',id);
+  showToast(attivo?'✓ Accesso attivato':'Accesso disattivato');
+  loadAll();
+}
+
+async function cambiaPiano(id,piano){
+  await client.from('accessi').update({piano:piano}).eq('id',id);
+  showToast('✓ Piano → '+piano);
+}
+
+async function attivatutti(){
+  var inAttesa=document.querySelectorAll('#tbody-nuovi .btn-attiva');
+  if(!inAttesa.length)return;
+  if(!confirm('Attivare tutti gli utenti in attesa?'))return;
+  await client.from('accessi').update({attivo:true}).eq('attivo',false);
+  showToast('✓ Tutti attivati!');
+  loadAll();
+}
+
+async function aggiungiAccesso(){
+  var email=document.getElementById('new-email').value.trim();
+  var piano=document.getElementById('new-piano').value;
+  if(!email){showToast('Inserisci email','err');return;}
+  // Cerca user_id in auth
+  var res=await client.from('accessi').insert([{
+    email:email,piano:piano,attivo:true,
+    created_at:new Date().toISOString()
+  }]);
+  if(res.error){showToast('Errore: '+res.error.message,'err');return;}
+  document.getElementById('new-email').value='';
+  showToast('✓ Accesso aggiunto per '+email);
+  loadAll();
+}
+
+/* ── REALTIME ──────────────────────────────────────────── */
+function avviaRealtime(){
+  client.channel('accessi-changes')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'accessi'},function(payload){
+      showToast('🔔 Nuovo utente: '+payload.new.email,'warn');
+      mostraBanner('Nuovo utente registrato: '+payload.new.email);
+      loadAll();
+    })
+    .subscribe();
+}
+
+/* ── UI HELPERS ────────────────────────────────────────── */
+function mostraBanner(txt){
+  var b=document.getElementById('notif-banner');
+  document.getElementById('notif-text').textContent=txt;
+  b.style.display='flex';
+}
+
+function showToast(msg,tipo){
+  var container=document.getElementById('toast-container');
+  var div=document.createElement('div');
+  div.className='toast-item'+(tipo?' '+tipo:'');
+  div.textContent=msg;
+  container.appendChild(div);
+  setTimeout(function(){div.remove();},3500);
+}
+
+/* ── INIT ──────────────────────────────────────────────── */
+(async function(){
+  var s=await client.auth.getSession();
+  if(s.data.session&&s.data.session.user.email===ADMIN_EMAIL){
+    currentUser=s.data.session.user;
+    showDashboard();
+  }
+})();
+
+client.auth.onAuthStateChange(async function(event,session){
+  if(event==='SIGNED_IN'&&session){
+    if(session.user.email===ADMIN_EMAIL){
+      currentUser=session.user;
+      showDashboard();
+    } else {
+      await client.auth.signOut();
+      document.getElementById('login-err').textContent='Account non autorizzato come admin';
+    }
+  }
+});
+</script>
+</body>
+</html>

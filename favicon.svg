@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#0C0C0E" rx="4"/>
+  <text x="16" y="13" text-anchor="middle" font-family="'Arial Narrow', Arial, sans-serif" font-size="11" font-weight="700" fill="#E8C547" letter-spacing="0.5">FOOD</text>
+  <text x="16" y="22" text-anchor="middle" font-family="'Arial Narrow', Arial, sans-serif" font-size="11" font-weight="700" fill="#E8C547" letter-spacing="0.5">COST</text>
+  <text x="16" y="30" text-anchor="middle" font-family="'Arial Narrow', Arial, sans-serif" font-size="8" font-weight="700" fill="#ffffff" letter-spacing="1">360</text>
+</svg>

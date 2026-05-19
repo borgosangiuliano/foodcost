@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<script src="./auth-guard.js"></script>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menù QR — FoodCost 360</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Lato:wght@300;400;700&family=Merriweather:wght@300;400;700&family=Playfair+Display:wght@400;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#0A0A0F;--dark:#12121A;--card:#1A1A26;--border:#2A2A3E;
+  --text:#E8E8F0;--muted:#6B6B8A;--gold:#E8C547;--gold2:#C9A82C;
+  --green:#3EC97A;--red:#E05252;--orange:#E89520;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px}
+.topbar{position:sticky;top:0;z-index:50;background:var(--dark);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.logo{display:flex;flex-direction:column;line-height:1;flex-shrink:0}
+.logo span:first-child{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--gold)}
+.logo span:last-child{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:4px;color:#fff;text-align:center}
+.topbar-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.btn{border:none;border-radius:8px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0A0A0F}
+.btn-gold:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--muted)}
+.content{padding:14px;max-width:700px;margin:0 auto;padding-bottom:40px;display:flex;flex-direction:column;gap:12px}
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat-item{background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold)}
+.stat-lab{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.card{background:var(--dark);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.card-header{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+.card-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:10px}
+.card-body.closed{display:none}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.fg input,.fg textarea{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%}
+.fg input:focus,.fg textarea:focus{border-color:rgba(232,197,71,.5)}
+.fg textarea{resize:vertical;min-height:55px}
+.import-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.imp-btn{border:1px dashed var(--border);border-radius:10px;padding:16px 10px;background:transparent;cursor:pointer;color:var(--text);font-family:'DM Sans',sans-serif;transition:.2s;text-align:center;width:100%}
+.imp-btn:hover{border-color:var(--gold);background:rgba(232,197,71,.05)}
+.imp-btn .ico{font-size:26px;display:block;margin-bottom:5px}
+.imp-btn .lbl{font-size:12px;font-weight:600;display:block;margin-bottom:2px}
+.imp-btn .sub{font-size:11px;color:var(--muted)}
+.imp-manual{border:1px dashed var(--border);border-radius:10px;padding:11px;background:transparent;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:.2s;font-size:13px;width:100%}
+.imp-manual:hover{border-color:var(--green);color:var(--green)}
+.msg{font-size:12px;color:var(--green);text-align:center;padding:4px;display:none}
+.cat-tabs{display:flex;gap:4px;flex-wrap:wrap;padding:0 16px 12px}
+.ctab{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:.15s}
+.ctab.on{background:rgba(232,197,71,.1);color:var(--gold);border-color:rgba(232,197,71,.3)}
+.piatto-item{display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);transition:.2s}
+.piatto-item:last-child{border-bottom:none}
+.piatto-item.off{opacity:.4}
+.pi-body{flex:1;min-width:0}
+.pi-cat{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.pi-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:2px}
+.pi-nome{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pi-prezzo{font-size:14px;font-weight:700;color:var(--gold);flex-shrink:0}
+.pi-desc{font-size:12px;color:var(--muted);line-height:1.4}
+.pi-allerg{font-size:11px;color:var(--orange);margin-top:2px}
+.pi-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.btn-vis{font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:.15s}
+.btn-vis.on{background:rgba(62,201,122,.1);color:var(--green);border-color:rgba(62,201,122,.3)}
+.btn-ic{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:.15s;color:var(--muted)}
+.btn-ic:hover:first-of-type{color:var(--gold)}
+.btn-ic.del:hover{color:var(--red)}
+.empty-msg{padding:28px 16px;text-align:center;color:var(--muted);font-size:13px}
+.bsrc{font-size:9px;padding:1px 5px;border-radius:10px;font-weight:600;vertical-align:middle;margin-left:3px}
+.bsrc-c{background:rgba(62,201,122,.12);color:var(--green)}
+.bsrc-b{background:rgba(232,149,32,.12);color:var(--orange)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:flex-end;backdrop-filter:blur(3px)}
+.overlay.hidden{display:none}
+.modal{background:var(--dark);border:1px solid var(--border);border-radius:16px 16px 0 0;width:100%;max-height:92vh;display:flex;flex-direction:column}
+@media(min-width:580px){
+  .overlay{align-items:center;padding:20px}
+  .modal{border-radius:14px;max-width:500px;margin:auto;max-height:88vh}
+}
+.mh{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.mt{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold)}
+.mb{padding:16px 18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px}
+.mf{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+.btn-save{padding:10px 22px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0A0A0F}
+.btn-x{padding:7px 12px;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);background:transparent}
+.qr-box{text-align:center;padding:8px 0}
+#qr-canvas{display:inline-block;background:#fff;padding:14px;border-radius:12px}
+.qr-url{font-size:11px;color:var(--muted);word-break:break-all;margin-top:10px;padding:8px;background:var(--bg);border-radius:7px;border:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><span>FOODCOST</span><span>360</span></div>
+  <div class="topbar-btns">
+    <button class="btn btn-ghost" onclick="openPreview()">👁 Anteprima</button>
+    <button class="btn btn-ghost" onclick="scaricaHTML()">⬇ HTML</button>
+    <button class="btn btn-gold" onclick="openQR()">📱 QR Code</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num" id="s-tot">0</div><div class="stat-lab">Piatti</div></div>
+    <div class="stat-item"><div class="stat-num" id="s-vis">0</div><div class="stat-lab">Visibili</div></div>
+    <div class="stat-item"><div class="stat-num" id="s-cat">0</div><div class="stat-lab">Categorie</div></div>
+  </div>
+
+  <!-- INFO LOCALE -->
+  <div class="card">
+    <div class="card-header" onclick="tog('cb-locale')">
+      <div class="card-title">🏠 Info locale</div>
+      <span id="ar-locale" style="font-size:11px;color:var(--muted)">▼</span>
+    </div>
+    <div class="card-body" id="cb-locale">
+      <div class="form-row">
+        <div class="fg"><label>Nome locale *</label><input id="l-nome" placeholder="es. Ristorante Da Mario" oninput="salvaL()"></div>
+        <div class="fg"><label>Tagline</label><input id="l-sub" placeholder="es. Cucina romagnola" oninput="salvaL()"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>Indirizzo</label><input id="l-addr" placeholder="es. Via Roma 12, Rimini" oninput="salvaL()"></div>
+        <div class="fg"><label>Telefono</label><input id="l-tel" placeholder="es. 0541 123456" oninput="salvaL()"></div>
+      </div>
+      <div class="fg"><label>URL menù (per il QR) *</label><input id="l-url" placeholder="es. https://foodcost360.it/menu/mario" oninput="salvaL()"></div>
+    </div>
+  </div>
+
+  <!-- IMPORTA -->
+  <div class="card">
+    <div class="card-header" onclick="tog('cb-import')">
+      <div class="card-title">📥 Importa piatti</div>
+      <span id="ar-import" style="font-size:11px;color:var(--muted)">▼</span>
+    </div>
+    <div class="card-body" id="cb-import">
+      <div class="import-grid">
+        <button class="imp-btn" onclick="document.getElementById('inp-cucina').click()">
+          <span class="ico">🍳</span>
+          <span class="lbl">FoodCost Cucina</span>
+          <span class="sub">Backup .json</span>
+        </button>
+        <button class="imp-btn" onclick="document.getElementById('inp-bar').click()">
+          <span class="ico">🍸</span>
+          <span class="lbl">BeverageCost Bar</span>
+          <span class="sub">Backup .json</span>
+        </button>
+      </div>
+      <button class="imp-manual" onclick="openMP()">➕ Aggiungi piatto manualmente</button>
+      <input type="file" id="inp-cucina" accept=".json" style="display:none" onchange="impCucina(this)">
+      <input type="file" id="inp-bar" accept=".json" style="display:none" onchange="impBar(this)">
+      <div class="msg" id="imp-msg"></div>
+    </div>
+  </div>
+
+  <!-- ASPETTO -->
+  <div class="card">
+    <div class="card-header" onclick="tog('cb-aspetto')">
+      <div class="card-title">🎨 Aspetto menù</div>
+      <span id="ar-aspetto" style="font-size:11px;color:var(--muted)">▼</span>
+    </div>
+    <div class="card-body closed" id="cb-aspetto">
+      <!-- LOGO -->
+      <div class="fg">
+        <label>Logo (opzionale)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div id="logo-preview" style="width:56px;height:56px;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden">🏠</div>
+          <div>
+            <button class="btn btn-ghost" style="font-size:12px;margin-bottom:5px" onclick="document.getElementById('inp-logo').click()">📷 Carica logo</button>
+            <button class="btn btn-ghost" id="btn-rm-logo" style="font-size:12px;display:none;color:var(--red)" onclick="rimuoviLogo()">✕ Rimuovi</button>
+            <input type="file" id="inp-logo" accept="image/*" style="display:none" onchange="caricaLogo(this)">
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Ridimensionato automaticamente · max 200px</div>
+          </div>
+        </div>
+      </div>
+      <!-- PALETTE PRESET -->
+      <div class="fg">
+        <label>Tema colori</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="palette-grid"></div>
+      </div>
+      <!-- COLORI CUSTOM -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div class="fg">
+          <label>Sfondo</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="color" id="col-bg" style="width:36px;height:32px;border-radius:6px;border:1px solid var(--border);background:none;cursor:pointer;padding:2px" oninput="onColorPicker('bg')" onchange="onColorPicker('bg')">
+            <input type="text" id="col-bg-txt" style="flex:1" placeholder="#0A0A0F" oninput="onColorTxt('bg')">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Testo</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="color" id="col-text" style="width:36px;height:32px;border-radius:6px;border:1px solid var(--border);background:none;cursor:pointer;padding:2px" oninput="onColorPicker('text')" onchange="onColorPicker('text')">
+            <input type="text" id="col-text-txt" style="flex:1" placeholder="#E8E8F0" oninput="onColorTxt('text')">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Accent</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="color" id="col-accent" style="width:36px;height:32px;border-radius:6px;border:1px solid var(--border);background:none;cursor:pointer;padding:2px" oninput="onColorPicker('accent')" onchange="onColorPicker('accent')">
+            <input type="text" id="col-accent-txt" style="flex:1" placeholder="#E8C547" oninput="onColorTxt('accent')">
+          </div>
+        </div>
+      </div>
+      <!-- FONT -->
+      <div class="fg">
+        <label>Font menù</label>
+        <select id="sel-font" onchange="onFontChange()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
+          <option value="DM Sans">DM Sans — moderno e leggibile</option>
+          <option value="Lato">Lato — pulito e professionale</option>
+          <option value="Merriweather">Merriweather — elegante con grazie</option>
+          <option value="Playfair Display">Playfair Display — lusso e raffinatezza</option>
+          <option value="Roboto">Roboto — minimalista</option>
+        </select>
+        <!-- Anteprima font live -->
+        <div id="font-preview" style="margin-top:8px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);line-height:1.6">
+          Tagliatelle al ragù · Risotto ai funghi · Tiramisù
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIATTI -->
+  <div class="card">
+    <div class="card-header" style="cursor:default">
+      <div class="card-title">🍽️ Piatti <span id="p-count" style="font-size:12px;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--muted)"></span></div>
+    </div>
+    <div id="cat-tabs-wrap" class="cat-tabs"></div>
+    <div id="piatti-list"></div>
+  </div>
+
+</div>
+
+<!-- MODAL PIATTO -->
+<div class="overlay hidden" id="modal-p">
+  <div class="modal">
+    <div class="mh">
+      <div class="mt" id="mp-title">Nuovo Piatto</div>
+      <button class="btn-x" style="padding:4px 10px" onclick="cM('modal-p')">✕</button>
+    </div>
+    <div class="mb">
+      <input type="hidden" id="ep-id">
+      <div class="fg"><label>Nome *</label><input id="ep-nome" placeholder="es. Tagliatelle al ragù"></div>
+      <div class="form-row">
+        <div class="fg"><label>Categoria</label><input id="ep-cat" placeholder="es. Primi" list="cat-dl"><datalist id="cat-dl"></datalist></div>
+        <div class="fg"><label>Prezzo €</label><input type="number" id="ep-prezzo" placeholder="14.00" step="0.50" min="0"></div>
+      </div>
+      <div class="fg"><label>Descrizione</label><textarea id="ep-desc" placeholder="Ingredienti, metodo di cottura..."></textarea></div>
+      <div class="fg"><label>Allergeni</label><input id="ep-allerg" placeholder="es. Glutine, Uova, Latte"></div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="ep-vis" checked style="accent-color:var(--gold);width:16px;height:16px">
+        Visibile nel menù
+      </label>
+    </div>
+    <div class="mf">
+      <button class="btn-x" onclick="cM('modal-p')">Annulla</button>
+      <button class="btn-save" onclick="salvaP()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL QR -->
+<div class="overlay hidden" id="modal-qr">
+  <div class="modal" style="max-width:380px">
+    <div class="mh"><div class="mt">📱 QR Code Menù</div><button class="btn-x" style="padding:4px 10px" onclick="cM('modal-qr')">✕</button></div>
+    <div class="mb">
+      <div class="qr-box"><div id="qr-canvas"></div><div class="qr-url" id="qr-url"></div></div>
+      <p style="font-size:12px;color:var(--muted);text-align:center;line-height:1.6">
+        Inserisci l'URL nella sezione "Info locale" per generare il QR corretto. Il QR si stampa una volta sola — il menù si aggiorna senza cambiare il QR.
+      </p>
+    </div>
+    <div class="mf">
+      <button class="btn-x" onclick="cM('modal-qr')">Chiudi</button>
+      <button class="btn-save" onclick="dlQR()">⬇ Scarica QR</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ANTEPRIMA -->
+<div class="overlay hidden" id="modal-prev">
+  <div class="modal" style="max-width:420px">
+    <div class="mh"><div class="mt">👁 Anteprima</div><button class="btn-x" style="padding:4px 10px" onclick="cM('modal-prev')">✕</button></div>
+    <div class="mb" style="padding:0">
+      <div id="prev-inner" style="background:#0A0A0F;border-radius:0 0 14px 14px;overflow:hidden"></div>
+    </div>
+    <div class="mf">
+      <button class="btn-x" onclick="cM('modal-prev')">Chiudi</button>
+      <button class="btn-save" onclick="scaricaHTML()">⬇ Scarica HTML</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function ld(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
+function sd(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function uid(){return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+
+var piatti=ld('qrmenu_piatti',[]);
+var locale=ld('qrmenu_locale',{nome:'',sub:'',addr:'',tel:'',url:''});
+var catOn='';
+var aspetto=ld('qrmenu_aspetto',{bg:'#0A0A0F',text:'#E8E8F0',accent:'#E8C547',font:'DM Sans',logo:null});
+
+var PALETTE=[
+  {nome:'Notte Dorata',bg:'#0A0A0F',text:'#E8E8F0',accent:'#E8C547'},
+  {nome:'Bianco Classico',bg:'#FFFFFF',text:'#111111',accent:'#C8960C'},
+  {nome:'Verde Bosco',bg:'#0D1F0D',text:'#E8F0E8',accent:'#4CAF7D'},
+  {nome:'Rosso Vino',bg:'#1A0A0A',text:'#F0E8E8',accent:'#E05252'},
+  {nome:'Blu Notte',bg:'#0A0F1A',text:'#E8EEF0',accent:'#3399FF'},
+  {nome:'Crema Elegante',bg:'#FAF7F0',text:'#2C2416',accent:'#8B6914'}
+];
+
+function init(){
+  document.getElementById('l-nome').value=locale.nome||'';
+  document.getElementById('l-sub').value=locale.sub||'';
+  document.getElementById('l-addr').value=locale.addr||'';
+  document.getElementById('l-tel').value=locale.tel||'';
+  document.getElementById('l-url').value=locale.url||'';
+  initAspetto();
+  render();
+}
+
+function salvaL(){
+  locale={nome:document.getElementById('l-nome').value,sub:document.getElementById('l-sub').value,addr:document.getElementById('l-addr').value,tel:document.getElementById('l-tel').value,url:document.getElementById('l-url').value};
+  sd('qrmenu_locale',locale);
+}
+
+/* ─── ASPETTO ────────────────────────────────────────────── */
+function initAspetto(){
+  aggiornaGridPalette();
+  document.getElementById('col-bg').value=aspetto.bg||'#0A0A0F';
+  document.getElementById('col-bg-txt').value=aspetto.bg||'#0A0A0F';
+  document.getElementById('col-text').value=aspetto.text||'#E8E8F0';
+  document.getElementById('col-text-txt').value=aspetto.text||'#E8E8F0';
+  document.getElementById('col-accent').value=aspetto.accent||'#E8C547';
+  document.getElementById('col-accent-txt').value=aspetto.accent||'#E8C547';
+  document.getElementById('sel-font').value=aspetto.font||'DM Sans';
+  if(aspetto.logo)mostraLogoPreview(aspetto.logo);
+  initFontPreview();
+}
+
+function aggiornaGridPalette(){
+  var grid=document.getElementById('palette-grid');
+  if(!grid)return;
+  grid.innerHTML=PALETTE.map(function(p,i){
+    var sel=aspetto.bg===p.bg&&aspetto.accent===p.accent;
+    return '<button onclick="applicaPalette('+i+')" style="border-radius:8px;border:2px solid '+(sel?p.accent:'#333')+';padding:8px 6px;cursor:pointer;background:'+p.bg+';transition:.15s;outline:none" title="'+p.nome+'">'+
+      '<div style="font-size:10px;font-weight:600;color:'+p.text+';margin-bottom:5px;white-space:nowrap">'+p.nome+'</div>'+
+      '<div style="display:flex;gap:3px;justify-content:center">'+
+        '<span style="width:12px;height:12px;border-radius:50%;background:'+p.bg+';border:1px solid '+p.text+';display:inline-block"></span>'+
+        '<span style="width:12px;height:12px;border-radius:50%;background:'+p.accent+';display:inline-block"></span>'+
+        '<span style="width:12px;height:12px;border-radius:50%;background:'+p.text+';display:inline-block"></span>'+
+      '</div>'+
+    '</button>';
+  }).join('');
+}
+
+function applicaPalette(i){
+  var p=PALETTE[i];
+  aspetto.bg=p.bg;aspetto.text=p.text;aspetto.accent=p.accent;
+  sd('qrmenu_aspetto',aspetto);
+  // Aggiorna solo i campi, non tutto
+  document.getElementById('col-bg').value=aspetto.bg;
+  document.getElementById('col-bg-txt').value=aspetto.bg;
+  document.getElementById('col-text').value=aspetto.text;
+  document.getElementById('col-text-txt').value=aspetto.text;
+  document.getElementById('col-accent').value=aspetto.accent;
+  document.getElementById('col-accent-txt').value=aspetto.accent;
+  aggiornaGridPalette();
+}
+
+function onColorPicker(tipo){
+  // Triggerato da oninput sul color picker (funziona su mobile e desktop)
+  var val=document.getElementById('col-'+tipo).value;
+  document.getElementById('col-'+tipo+'-txt').value=val;
+  if(tipo==='bg')aspetto.bg=val;
+  else if(tipo==='text')aspetto.text=val;
+  else if(tipo==='accent')aspetto.accent=val;
+  sd('qrmenu_aspetto',aspetto);
+  aggiornaGridPalette();
+}
+
+function onColorTxt(tipo){
+  var val=document.getElementById('col-'+tipo+'-txt').value.trim();
+  if(!/^#[0-9A-Fa-f]{6}$/.test(val))return;
+  document.getElementById('col-'+tipo).value=val;
+  if(tipo==='bg')aspetto.bg=val;
+  else if(tipo==='text')aspetto.text=val;
+  else if(tipo==='accent')aspetto.accent=val;
+  sd('qrmenu_aspetto',aspetto);
+  aggiornaGridPalette();
+}
+
+function onFontChange(){
+  aspetto.font=document.getElementById('sel-font').value;
+  sd('qrmenu_aspetto',aspetto);
+  // Aggiorna anteprima font live
+  var prev=document.getElementById('font-preview');
+  if(prev)prev.style.fontFamily="'"+aspetto.font+"', sans-serif";
+}
+
+function initFontPreview(){
+  var prev=document.getElementById('font-preview');
+  if(prev)prev.style.fontFamily="'"+(aspetto.font||'DM Sans')+"', sans-serif";
+}
+
+function salvaAspetto(){
+  // Mantenuto per compatibilità ma non chiama più initAspetto
+  sd('qrmenu_aspetto',aspetto);
+}
+
+function caricaLogo(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=200;
+      var w=img.width,h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
+      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      var canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      aspetto.logo=canvas.toDataURL('image/jpeg',0.85);
+      sd('qrmenu_aspetto',aspetto);
+      mostraLogoPreview(aspetto.logo);
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+function mostraLogoPreview(src){
+  var el=document.getElementById('logo-preview');
+  var btn=document.getElementById('btn-rm-logo');
+  if(src){
+    el.innerHTML='<img src="'+src+'" style="width:100%;height:100%;object-fit:contain">';
+    if(btn)btn.style.display='inline-flex';
+  } else {
+    el.innerHTML='🏠';
+    if(btn)btn.style.display='none';
+  }
+}
+
+function rimuoviLogo(){
+  aspetto.logo=null;
+  sd('qrmenu_aspetto',aspetto);
+  mostraLogoPreview(null);
+}
+
+function cats(){return[...new Set(piatti.map(function(p){return p.cat||'Altro';}))].sort();}
+
+function render(){
+  var cc=cats();
+  var vis=piatti.filter(function(p){return p.vis!==false;});
+  document.getElementById('s-tot').textContent=piatti.length;
+  document.getElementById('s-vis').textContent=vis.length;
+  document.getElementById('s-cat').textContent=cc.length;
+  document.getElementById('p-count').textContent='('+piatti.length+')';
+  // Tabs
+  document.getElementById('cat-tabs-wrap').innerHTML=
+    '<button class="ctab'+(catOn===''?' on':'')+'" onclick="setC(\'\')">Tutti</button>'+
+    cc.map(function(c){return '<button class="ctab'+(catOn===c?' on':'')+'" onclick="setC(\''+c+'\')">'+c+'</button>';}).join('');
+  // Lista
+  var lista=catOn?piatti.filter(function(p){return(p.cat||'Altro')===catOn;}):piatti;
+  var el=document.getElementById('piatti-list');
+  if(!lista.length){
+    el.innerHTML='<div class="empty-msg">'+(piatti.length?'Nessun piatto in questa categoria':'Importa il JSON da FoodCost Cucina o BeverageCost Bar, oppure aggiungi piatti manualmente')+'</div>';
+    return;
+  }
+  el.innerHTML=lista.map(function(p){
+    var v=p.vis!==false;
+    var src=p.fonte==='cucina'?'<span class="bsrc bsrc-c">🍳</span>':p.fonte==='bar'?'<span class="bsrc bsrc-b">🍸</span>':'';
+    return '<div class="piatto-item'+(v?'':' off')+'">'+
+      '<div class="pi-body">'+
+        '<div class="pi-cat">'+(p.cat||'Altro')+src+'</div>'+
+        '<div class="pi-top"><div class="pi-nome">'+p.nome+'</div>'+(p.prezzo>0?'<div class="pi-prezzo">€'+parseFloat(p.prezzo).toFixed(2)+'</div>':'')+'</div>'+
+        (p.desc?'<div class="pi-desc">'+p.desc+'</div>':'')+
+        (p.allergeni?'<div class="pi-allerg">⚠ '+p.allergeni+'</div>':'')+
+      '</div>'+
+      '<div class="pi-actions">'+
+        '<button class="btn-vis'+(v?' on':'')+'" onclick="togVis(\''+p.id+'\')">'+(v?'👁 Sì':'🙈 No')+'</button>'+
+        '<button class="btn-ic" onclick="openMP(\''+p.id+'\')">✏️</button>'+
+        '<button class="btn-ic del" onclick="delP(\''+p.id+'\')">🗑</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  // Datalist
+  document.getElementById('cat-dl').innerHTML=cc.map(function(c){return '<option value="'+c+'">';}).join('');
+}
+
+function setC(c){catOn=c;render();}
+
+function togVis(id){
+  piatti=piatti.map(function(p){if(p.id===id)p.vis=p.vis===false?true:false;return p;});
+  sd('qrmenu_piatti',piatti);render();
+}
+
+function delP(id){
+  var p=piatti.find(function(x){return x.id===id;});
+  if(!confirm('Eliminare "'+p.nome+'"?'))return;
+  piatti=piatti.filter(function(x){return x.id!==id;});
+  sd('qrmenu_piatti',piatti);render();
+}
+
+function showMsg(t){var e=document.getElementById('imp-msg');e.textContent=t;e.style.display='block';setTimeout(function(){e.style.display='none';},3500);}
+
+function impCucina(input){
+  var f=input.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var bk=JSON.parse(e.target.result);
+      if(!bk.ricette)throw new Error('File non valido — usa il Backup dati da FoodCost Cucina');
+      var n=0;
+      Object.values(bk.ricette).forEach(function(lista){
+        (lista||[]).forEach(function(ric){
+          if((ric.tipo||'principale')==='base')return;
+          if(piatti.find(function(p){return p.id===ric.id;}))return;
+          piatti.push({id:ric.id,nome:ric.nome,cat:ric.cat||'Cucina',prezzo:ric.prezzo||0,desc:ric.note||'',allergeni:'',vis:true,fonte:'cucina'});
+          n++;
+        });
+      });
+      if(!locale.nome&&bk.menus&&bk.menus[0]){locale.nome=bk.menus[0].nome||'';document.getElementById('l-nome').value=locale.nome;sd('qrmenu_locale',locale);}
+      sd('qrmenu_piatti',piatti);render();
+      showMsg('✓ Importati '+n+' piatti dalla cucina!');
+    }catch(err){alert('Errore: '+err.message);}
+  };
+  r.readAsText(f);input.value='';
+}
+
+function impBar(input){
+  var f=input.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var bk=JSON.parse(e.target.result);
+      if(!bk.cocktail&&!bk.caffe)throw new Error('File non valido — usa il Backup dati da BeverageCost Bar');
+      var n=0;
+      if(bk.cocktail)Object.values(bk.cocktail).forEach(function(l){(l||[]).forEach(function(c){if(piatti.find(function(p){return p.id===c.id;}))return;piatti.push({id:c.id,nome:c.nome,cat:'Cocktail',prezzo:c.prezzo||0,desc:c.note||'',allergeni:'',vis:true,fonte:'bar'});n++;});});
+      if(bk.caffe)Object.values(bk.caffe).forEach(function(l){(l||[]).forEach(function(c){if(piatti.find(function(p){return p.id===c.id;}))return;piatti.push({id:c.id,nome:c.nome,cat:'Caffetteria',prezzo:c.prezzo||0,desc:c.note||'',allergeni:'',vis:true,fonte:'bar'});n++;});});
+      sd('qrmenu_piatti',piatti);render();
+      showMsg('✓ Importati '+n+' voci dal bar!');
+    }catch(err){alert('Errore: '+err.message);}
+  };
+  r.readAsText(f);input.value='';
+}
+
+function openMP(id){
+  var p=id?piatti.find(function(x){return x.id===id;}):null;
+  document.getElementById('ep-id').value=id||'';
+  document.getElementById('mp-title').textContent=p?'Modifica Piatto':'Nuovo Piatto';
+  document.getElementById('ep-nome').value=p?p.nome:'';
+  document.getElementById('ep-cat').value=p?(p.cat||''):'';
+  document.getElementById('ep-prezzo').value=p?p.prezzo:'';
+  document.getElementById('ep-desc').value=p?(p.desc||''):'';
+  document.getElementById('ep-allerg').value=p?(p.allergeni||''):'';
+  document.getElementById('ep-vis').checked=p?(p.vis!==false):true;
+  document.getElementById('modal-p').classList.remove('hidden');
+}
+
+function salvaP(){
+  var nome=document.getElementById('ep-nome').value.trim();
+  if(!nome){alert('Inserisci il nome');return;}
+  var id=document.getElementById('ep-id').value;
+  var old=id?piatti.find(function(p){return p.id===id;}):null;
+  var obj={id:id||uid(),nome:nome,cat:document.getElementById('ep-cat').value||'Altro',prezzo:parseFloat(document.getElementById('ep-prezzo').value)||0,desc:document.getElementById('ep-desc').value.trim(),allergeni:document.getElementById('ep-allerg').value.trim(),vis:document.getElementById('ep-vis').checked,fonte:(old&&old.fonte)||'manuale'};
+  if(id)piatti=piatti.map(function(p){return p.id===id?obj:p;});
+  else piatti.push(obj);
+  sd('qrmenu_piatti',piatti);cM('modal-p');render();
+}
+
+function buildHTML(){
+  var cc=cats();
+  var vis=piatti.filter(function(p){return p.vis!==false;});
+  var bg=aspetto.bg||'#0A0A0F';
+  var tx=aspetto.text||'#E8E8F0';
+  var ac=aspetto.accent||'#E8C547';
+  var fn=aspetto.font||'DM Sans';
+  // Calcola colore header (leggermente più chiaro/scuro dello sfondo)
+  var hdrBg=bg==='#FFFFFF'||bg==='#FAF7F0'?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.05)';
+  var mutedTx=bg==='#FFFFFF'||bg==='#FAF7F0'?'rgba(0,0,0,0.45)':'rgba(255,255,255,0.4)';
+  var borderCol=bg==='#FFFFFF'||bg==='#FAF7F0'?'rgba(0,0,0,0.1)':'rgba(255,255,255,0.08)';
+  var h='<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menù QR — FoodCost 360</title>';
+  h+='<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Lato:wght@300;400;700&family=Merriweather:wght@300;400;700&family=Playfair+Display:wght@400;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">';
+  h+='<style>*{box-sizing:border-box;margin:0;padding:0}body{background:'+bg+';color:'+tx+';font-family:\''+fn+'\',sans-serif;padding-bottom:48px}';
+  h+='.hdr{background:'+hdrBg+';border-bottom:1px solid '+borderCol+';padding:28px 20px;text-align:center}';
+  h+='.logo-img{max-width:120px;max-height:80px;object-fit:contain;margin-bottom:12px}';
+  h+='.hn{font-family:\'Bebas Neue\',sans-serif;font-size:38px;letter-spacing:3px;color:'+ac+'}';
+  h+='.hs{font-size:13px;color:'+mutedTx+';margin-top:4px}.hi{font-size:12px;color:'+mutedTx+';margin-top:3px}';
+  h+='.wrap{max-width:600px;margin:0 auto;padding:0 16px}';
+  h+='.ct{font-family:\'Bebas Neue\',sans-serif;font-size:22px;letter-spacing:1px;color:'+ac+';margin:28px 0 10px;padding-bottom:8px;border-bottom:2px solid '+borderCol+'}';
+  h+='.pi{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid '+borderCol+'}';
+  h+='.pib{flex:1;margin-right:12px}.pn{font-size:14px;font-weight:600}.pd{font-size:12px;color:'+mutedTx+';margin-top:3px;line-height:1.5}';
+  h+='.pa{font-size:11px;color:#E89520;margin-top:4px}.pp{font-size:15px;font-weight:700;color:'+ac+';flex-shrink:0;padding-top:1px}';
+  h+='.ft{text-align:center;padding:32px 16px;font-size:11px;color:'+borderCol+'}</style></head><body>';
+  h+='<div class="hdr">';
+  if(aspetto.logo)h+='<div><img src="'+aspetto.logo+'" class="logo-img" alt="Logo"></div>';
+  h+='<div class="hn">'+(locale.nome||'IL NOSTRO MENÙ')+'</div>';
+  if(locale.sub)h+='<div class="hs">'+locale.sub+'</div>';
+  if(locale.addr)h+='<div class="hi">📍 '+locale.addr+'</div>';
+  if(locale.tel)h+='<div class="hi">📞 '+locale.tel+'</div>';
+  h+='</div><div class="wrap">';
+  cc.forEach(function(cat){
+    var items=vis.filter(function(p){return(p.cat||'Altro')===cat;});
+    if(!items.length)return;
+    h+='<div class="ct">'+cat+'</div>';
+    items.forEach(function(p){
+      h+='<div class="pi"><div class="pib"><div class="pn">'+p.nome+'</div>';
+      if(p.desc)h+='<div class="pd">'+p.desc+'</div>';
+      if(p.allergeni)h+='<div class="pa">⚠ '+p.allergeni+'</div>';
+      h+='</div>'+(p.prezzo>0?'<div class="pp">€'+parseFloat(p.prezzo).toFixed(2)+'</div>':'')+'</div>';
+    });
+  });
+  h+='</div><div class="ft">Menù digitale · FoodCost 360</div></body></html>';
+  return h;
+}
+
+function scaricaHTML(){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([buildHTML()],{type:'text/html;charset=utf-8'}));
+  a.download='menu-'+(locale.nome||'ristorante').toLowerCase().replace(/\s+/g,'-')+'.html';
+  a.click();URL.revokeObjectURL(a.href);
+  cM('modal-prev');
+}
+
+function openPreview(){
+  var cc=cats();
+  var vis=piatti.filter(function(p){return p.vis!==false;});
+  var bg=aspetto.bg||'#0A0A0F';
+  var tx=aspetto.text||'#E8E8F0';
+  var ac=aspetto.accent||'#E8C547';
+  var fn=aspetto.font||'DM Sans';
+  var hdrBg=bg==='#FFFFFF'||bg==='#FAF7F0'?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.05)';
+  var mutedTx=bg==='#FFFFFF'||bg==='#FAF7F0'?'rgba(0,0,0,0.45)':'rgba(255,255,255,0.4)';
+  var borderCol=bg==='#FFFFFF'||bg==='#FAF7F0'?'rgba(0,0,0,0.1)':'rgba(255,255,255,0.08)';
+  var o='<div style="background:'+bg+';padding-bottom:12px;font-family:\''+fn+'\',sans-serif">';
+  o+='<div style="background:'+hdrBg+';border-bottom:1px solid '+borderCol+';padding:16px;text-align:center">';
+  if(aspetto.logo)o+='<img src="'+aspetto.logo+'" style="max-width:80px;max-height:50px;object-fit:contain;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto">';
+  o+='<div style="font-family:\'Bebas Neue\',sans-serif;font-size:26px;letter-spacing:2px;color:'+ac+'">'+(locale.nome||'IL NOSTRO MENÙ')+'</div>';
+  if(locale.sub)o+='<div style="font-size:12px;color:'+mutedTx+';margin-top:3px">'+locale.sub+'</div>';
+  o+='</div><div style="padding:0 14px">';
+  if(!vis.length){o+='<div style="padding:20px;text-align:center;font-size:13px;color:'+mutedTx+'">Nessun piatto visibile</div>';}
+  cc.forEach(function(cat){
+    var items=vis.filter(function(p){return(p.cat||'Altro')===cat;});
+    if(!items.length)return;
+    o+='<div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:'+ac+';margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid '+borderCol+'">'+cat+'</div>';
+    items.forEach(function(p){
+      o+='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid '+borderCol+'">';
+      o+='<div style="flex:1;margin-right:10px"><div style="font-size:13px;font-weight:600;color:'+tx+'">'+p.nome+'</div>';
+      if(p.desc)o+='<div style="font-size:11px;color:'+mutedTx+';margin-top:2px">'+p.desc+'</div>';
+      o+='</div>'+(p.prezzo>0?'<div style="font-size:13px;font-weight:700;color:'+ac+';flex-shrink:0">€'+parseFloat(p.prezzo).toFixed(2)+'</div>':'')+'</div>';
+    });
+  });
+  o+='</div></div>';
+  document.getElementById('prev-inner').innerHTML=o;
+  document.getElementById('modal-prev').classList.remove('hidden');
+}
+
+function openQR(){
+  var url=locale.url||window.location.href;
+  document.getElementById('qr-url').textContent=url;
+  var c=document.getElementById('qr-canvas');c.innerHTML='';
+  new QRCode(c,{text:url,width:180,height:180,colorDark:'#0A0A0F',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  document.getElementById('modal-qr').classList.remove('hidden');
+}
+
+function dlQR(){
+  var cv=document.querySelector('#qr-canvas canvas');
+  if(!cv){alert('Genera prima il QR');return;}
+  var a=document.createElement('a');
+  a.download='qr-'+(locale.nome||'menu').toLowerCase().replace(/\s+/g,'-')+'.png';
+  a.href=cv.toDataURL('image/png');a.click();
+}
+
+function tog(id){
+  var b=document.getElementById(id);
+  var closed=b.classList.toggle('closed');
+  var ar=document.getElementById('ar-'+id.replace('cb-',''));
+  if(ar)ar.textContent=closed?'▶':'▼';
+}
+
+function cM(id){
+  if(id)document.getElementById(id).classList.add('hidden');
+  else document.querySelectorAll('.overlay').forEach(function(o){o.classList.add('hidden');});
+}
+document.querySelectorAll('.overlay').forEach(function(o){
+  o.addEventListener('click',function(e){if(e.target===o)cM(o.id);});
+});
+
+init();
+</script>
+</body>
+</html>
