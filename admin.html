@@ -98,6 +98,9 @@ tr.nuova td{background:rgba(232,197,71,.04)}
 /* Notifica nuovi utenti */
 .notif-banner{background:rgba(232,197,71,.08);border:1px solid rgba(232,197,71,.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:none;align-items:center;justify-content:space-between;gap:12px}
 .notif-banner p{font-size:13px;color:var(--gold);font-weight:500}
+.pi-inp{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%}
+.pi-inp:focus{border-color:rgba(232,197,71,.4)}
+.pi-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -199,6 +202,85 @@ tr.nuova td{background:rgba(232,197,71,.04)}
           </tr></thead>
           <tbody id="tbody-tutti"></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- GENERATORE PROMPT CLAUDE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🤖 Genera Prompt per Claude</div>
+        <div style="display:flex;gap:4px">
+          <button class="btn-sm" id="pt-ing" onclick="ptab('ing')" style="color:var(--gold);border-color:rgba(232,197,71,.3)">🧺 Ingrediente</button>
+          <button class="btn-sm" id="pt-ric" onclick="ptab('ric')">🍽️ Ricetta</button>
+        </div>
+      </div>
+
+      <!-- FORM INGREDIENTE -->
+      <div id="pf-ing" style="padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><span class="pi-label">Nome ingrediente *</span><input class="pi-inp" id="pi-nome" type="text" placeholder="es. Petto di pollo"></div>
+          <div><span class="pi-label">Categoria</span>
+            <select class="pi-inp" id="pi-cat">
+              <option>Carni & Affettati</option><option>Pesce & Frutti di Mare</option>
+              <option>Verdure & Ortaggi</option><option>Formaggi & Latticini</option>
+              <option>Pasta & Cereali</option><option>Salse & Condimenti</option>
+              <option>Olio & Grassi</option><option>Spezie & Aromi</option>
+              <option>Bevande & Liquori</option><option>Altro</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><span class="pi-label">Unità</span>
+            <select class="pi-inp" id="pi-unit">
+              <option value="kg">kg</option><option value="g">g</option>
+              <option value="lt">lt</option><option value="ml">ml</option>
+              <option value="cl">cl</option><option value="pz">pz (pezzo)</option>
+            </select>
+          </div>
+          <div><span class="pi-label">Prezzo acquisto (€)</span><input class="pi-inp" id="pi-prezzo" type="number" placeholder="es. 8.50" step="0.01" min="0"></div>
+          <div><span class="pi-label">Qtà confezione</span><input class="pi-inp" id="pi-qty" type="number" placeholder="es. 1" step="0.1" min="0"></div>
+        </div>
+        <div><button class="btn-add" style="padding:9px 20px" onclick="genPromptIng()">✨ Genera Prompt</button></div>
+      </div>
+
+      <!-- FORM RICETTA -->
+      <div id="pf-ric" style="padding:16px 18px;display:none;flex-direction:column;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><span class="pi-label">Nome ricetta *</span><input class="pi-inp" id="pr-nome" type="text" placeholder="es. Pasta alla Carbonara"></div>
+          <div><span class="pi-label">Tipo</span>
+            <select class="pi-inp" id="pr-tipo" onchange="togglePRprezzo()">
+              <option value="principale">Principale (con prezzo)</option>
+              <option value="base">Base / Semi-lavorato</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><span class="pi-label">Categoria</span>
+            <select class="pi-inp" id="pr-cat">
+              <option>Antipasti</option><option>Primi</option>
+              <option>Secondi - Carne</option><option>Secondi - Pesce</option>
+              <option>Contorni</option><option>Dolci</option>
+              <option>Finger Food</option><option>Pizze</option>
+              <option>Zuppe & Vellutate</option><option>Altro</option>
+            </select>
+          </div>
+          <div id="pr-prezzo-wrap"><span class="pi-label">Prezzo vendita (€)</span><input class="pi-inp" id="pr-prezzo" type="number" placeholder="es. 14.00" step="0.10" min="0"></div>
+          <div><span class="pi-label">Porzioni</span><input class="pi-inp" id="pr-porzioni" type="number" placeholder="4" min="1" value="4"></div>
+        </div>
+        <div>
+          <span class="pi-label">Ingredienti</span>
+          <div id="pr-ings" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
+          <button onclick="addPrIng()" class="btn-sm" style="font-size:12px">+ Ingrediente</button>
+        </div>
+        <div><span class="pi-label">Note preparazione</span><textarea class="pi-inp" id="pr-note" rows="2" placeholder="es. Mantecata fuori fuoco, no panna..." style="resize:vertical"></textarea></div>
+        <div><button class="btn-add" style="padding:9px 20px" onclick="genPromptRic()">✨ Genera Prompt</button></div>
+      </div>
+
+      <!-- OUTPUT -->
+      <div id="prompt-out" style="display:none;padding:0 18px 16px">
+        <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Prompt generato — copia e incolla su Claude:</div>
+        <div id="prompt-txt" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;font-family:monospace;max-height:300px;overflow-y:auto;word-break:break-word"></div>
+        <button id="copy-btn" onclick="copyPromptTxt()" style="margin-top:10px;width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0C0C0E;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer">📋 Copia prompt</button>
       </div>
     </div>
 
@@ -422,6 +504,115 @@ client.auth.onAuthStateChange(async function(event,session){
     }
   }
 });
+
+/* ── GENERATORE PROMPT CLAUDE ──────────────────────────── */
+function ptab(t){
+  document.getElementById('pf-ing').style.display=t==='ing'?'flex':'none';
+  document.getElementById('pf-ric').style.display=t==='ric'?'flex':'none';
+  document.getElementById('prompt-out').style.display='none';
+  document.getElementById('pt-ing').style.color=t==='ing'?'var(--gold)':'var(--muted)';
+  document.getElementById('pt-ing').style.borderColor=t==='ing'?'rgba(232,197,71,.3)':'var(--border)';
+  document.getElementById('pt-ric').style.color=t==='ric'?'var(--gold)':'var(--muted)';
+  document.getElementById('pt-ric').style.borderColor=t==='ric'?'rgba(232,197,71,.3)':'var(--border)';
+}
+
+function togglePRprezzo(){
+  var base=document.getElementById('pr-tipo').value==='base';
+  document.getElementById('pr-prezzo-wrap').style.opacity=base?'0.3':'1';
+  document.getElementById('pr-prezzo-wrap').style.pointerEvents=base?'none':'auto';
+}
+
+function addPrIng(){
+  var c=document.getElementById('pr-ings');
+  var row=document.createElement('div');
+  row.style.cssText='display:grid;grid-template-columns:2fr 1fr 70px 65px 24px;gap:6px;align-items:center';
+  row.innerHTML=
+    '<input class="pi-inp" placeholder="Nome ingrediente" type="text" style="font-size:12px">'+
+    '<input class="pi-inp" placeholder="Qtà" type="number" step="0.1" min="0" style="font-size:12px">'+
+    '<select class="pi-inp" style="font-size:12px"><option>g</option><option>kg</option><option>ml</option><option>cl</option><option>lt</option><option>pz</option></select>'+
+    '<input class="pi-inp" placeholder="Resa%" type="number" min="1" max="100" value="100" style="font-size:12px">'+
+    '<button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0;line-height:1">×</button>';
+  c.appendChild(row);
+}
+
+function genPromptIng(){
+  var nome=document.getElementById('pi-nome').value.trim();
+  if(!nome){showToast('Inserisci il nome dell\'ingrediente','err');return;}
+  var cat=document.getElementById('pi-cat').value;
+  var unit=document.getElementById('pi-unit').value;
+  var prezzo=document.getElementById('pi-prezzo').value;
+  var qty=document.getElementById('pi-qty').value;
+
+  var p='Aggiungi questo ingrediente al database di FoodCost 360.\n\n';
+  p+='Dati ingrediente:\n';
+  p+='- Nome: '+nome+'\n';
+  p+='- Categoria: '+cat+'\n';
+  p+='- Unità di misura: '+unit+'\n';
+  if(prezzo) p+='- Prezzo di acquisto: €'+parseFloat(prezzo).toFixed(2)+'\n';
+  if(qty) p+='- Quantità confezione: '+qty+' '+unit+'\n';
+  p+='\nGenera il JSON compatibile con FoodCost 360 per questo ingrediente. ';
+  p+='La struttura deve includere: { id, nome, cat, unit, prezzo, qty, scarto }.';
+  mostraPrompt(p);
+}
+
+function genPromptRic(){
+  var nome=document.getElementById('pr-nome').value.trim();
+  if(!nome){showToast('Inserisci il nome della ricetta','err');return;}
+  var tipo=document.getElementById('pr-tipo').value;
+  var cat=document.getElementById('pr-cat').value;
+  var prezzo=document.getElementById('pr-prezzo').value;
+  var porzioni=document.getElementById('pr-porzioni').value||4;
+  var note=document.getElementById('pr-note').value.trim();
+
+  var p='Aggiungi questa ricetta a FoodCost 360.\n\n';
+  p+='Dati ricetta:\n';
+  p+='- Nome: '+nome+'\n';
+  p+='- Tipo: '+tipo+(tipo==='base'?' (semi-lavorato — nessun prezzo di vendita)':' (piatto principale)')+'\n';
+  p+='- Categoria: '+cat+'\n';
+  if(tipo==='principale'&&prezzo) p+='- Prezzo di vendita: €'+parseFloat(prezzo).toFixed(2)+'\n';
+  p+='- Porzioni: '+porzioni+'\n';
+  if(note) p+='- Note di preparazione: '+note+'\n';
+
+  var ings=[];
+  document.querySelectorAll('#pr-ings > div').forEach(function(row){
+    var inps=row.querySelectorAll('input');
+    var sels=row.querySelectorAll('select');
+    var n=(inps[0]||{}).value||'';
+    var q=(inps[1]||{}).value||'';
+    var u=(sels[0]||{}).value||'g';
+    var r=(inps[2]||{}).value||'100';
+    if(n&&q) ings.push('  - '+n+': '+q+' '+u+(r&&r!=='100'?', resa '+r+'%':''));
+  });
+  if(ings.length) p+='\nIngredienti:\n'+ings.join('\n')+'\n';
+
+  p+='\nGenera il JSON compatibile con FoodCost 360. ';
+  p+='Struttura ricetta: { id, nome, tipo, cat, prezzo, porzioni, misc_cost, note, sub_ricette:[], ingredienti:[{id, qty, resa, unit}] }. ';
+  p+='Per gli ingredienti usa id riferimento dalla tabella ingredienti esistente, oppure segnala quali nuovi ingredienti vanno aggiunti prima.';
+  mostraPrompt(p);
+}
+
+function mostraPrompt(txt){
+  document.getElementById('prompt-txt').textContent=txt;
+  document.getElementById('prompt-out').style.display='block';
+  document.getElementById('copy-btn').textContent='📋 Copia prompt';
+  document.getElementById('prompt-out').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function copyPromptTxt(){
+  var txt=document.getElementById('prompt-txt').textContent;
+  var btn=document.getElementById('copy-btn');
+  navigator.clipboard.writeText(txt).then(function(){
+    btn.textContent='✓ Copiato!';
+    setTimeout(function(){btn.textContent='📋 Copia prompt';},2000);
+  }).catch(function(){
+    var ta=document.createElement('textarea');
+    ta.value=txt;ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent='✓ Copiato!';
+    setTimeout(function(){btn.textContent='📋 Copia prompt';},2000);
+  });
+}
 </script>
 </body>
 </html>
