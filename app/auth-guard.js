@@ -102,7 +102,7 @@
   };
 
   window.fc360Google=async function(){
-    await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});
+    await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/login.html'}});
   };
 
   window.fc360Forgot=async function(){
@@ -310,11 +310,14 @@
     showOverlay();
   }
 
-  // OAuth callback
+  // OAuth callback e recovery password
   client.auth.onAuthStateChange(async function(event,session){
     if(event==='SIGNED_IN'&&session){
       var overlay=document.getElementById('fc360-overlay');
       if(overlay)await fc360Check(session.user);
+    }
+    if(event==='PASSWORD_RECOVERY'){
+      window.location.replace('/login.html?mode=reset');
     }
   });
 

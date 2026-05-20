@@ -348,7 +348,7 @@ async function init(){
     document.getElementById('l-sub').value = locale.sub;
     document.getElementById('l-addr').value = locale.addr;
     document.getElementById('l-tel').value = locale.tel;
-    document.getElementById('slug-display').textContent = 'https://foodcost360.it/menu/'+_slug;
+    document.getElementById('slug-display').textContent = window.location.origin+'/menu/'+_slug;
     initAspetto();
     render();
   } catch(err){
@@ -426,7 +426,7 @@ async function salvaTutto(){
   // Rigenera slug dal nome se è la prima volta
   if(!_slug || _slug.startsWith('menu-')){
     _slug = await generaSlug();
-    document.getElementById('slug-display').textContent = 'https://foodcost360.it/menu/'+_slug;
+    document.getElementById('slug-display').textContent = window.location.origin+'/menu/'+_slug;
   }
 
   var res = await _sb.from('menu_qr').upsert([{
@@ -682,7 +682,7 @@ function openPreview(){
    QR CODE
 ================================================================ */
 function openQR(){
-  var url='https://foodcost360.it/menu/'+(_slug||'');
+  var url=window.location.origin+'/menu/'+(_slug||'');
   document.getElementById('qr-url').textContent=url;
   var c=document.getElementById('qr-canvas');c.innerHTML='';
   new QRCode(c,{text:url,width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});

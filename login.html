@@ -136,6 +136,26 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
     </div>
   </div>
 
+  <!-- RESET PASSWORD -->
+  <div id="reset-section" style="display:none">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:32px;margin-bottom:8px">🔑</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);letter-spacing:1px">Nuova password</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Scegli una nuova password per il tuo account</div>
+    </div>
+    <div class="form">
+      <div class="fg">
+        <label>Nuova Password</label>
+        <input type="password" id="reset-pwd" placeholder="Minimo 6 caratteri">
+      </div>
+      <div class="fg">
+        <label>Conferma Password</label>
+        <input type="password" id="reset-pwd2" placeholder="Ripeti la password">
+      </div>
+      <button class="btn-main" onclick="doResetPassword()">Aggiorna password</button>
+    </div>
+  </div>
+
   <!-- ACCESSO NEGATO (non pagante) -->
   <div class="denied" id="denied-section">
     <div class="denied-icon">🔒</div>
@@ -161,7 +181,7 @@ var SUPABASE_KEY='sb_publishable_RcX37_4t0429HeaBRYs03w_C-53rBQV';
 var supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 // Redirect destination dopo login
-var redirect=new URLSearchParams(window.location.search).get('redirect')||'app/cucina.html';
+var redirect=new URLSearchParams(window.location.search).get('redirect')||'app/dashboard.html';
 
 /* ── TABS ──────────────────────────────────────────────── */
 function switchTab(t){
@@ -192,6 +212,12 @@ function setLoading(btnId,loading){
 
 /* ── CHECK SESSIONE all'avvio ──────────────────────────── */
 (async function(){
+  // Modalità reset password (redirect da auth-guard dopo link email)
+  if(new URLSearchParams(window.location.search).get('mode')==='reset'){
+    document.getElementById('auth-section').style.display='none';
+    document.getElementById('reset-section').style.display='block';
+    return;
+  }
   var session=await supabase.auth.getSession();
   if(session.data.session){
     // Già loggato — controlla se è pagante
@@ -290,10 +316,28 @@ function traduciErrore(msg){
   return msg;
 }
 
-// Gestione redirect dopo OAuth Google
+/* ── RESET PASSWORD ────────────────────────────────────── */
+async function doResetPassword(){
+  var pwd=document.getElementById('reset-pwd').value;
+  var pwd2=document.getElementById('reset-pwd2').value;
+  if(!pwd||pwd.length<6){showMsg('La password deve avere almeno 6 caratteri');return;}
+  if(pwd!==pwd2){showMsg('Le password non coincidono');return;}
+  var res=await supabase.auth.updateUser({password:pwd});
+  if(res.error){showMsg(traduciErrore(res.error.message));return;}
+  showMsg('✓ Password aggiornata! Accesso in corso...','success');
+  setTimeout(function(){window.location.href='app/dashboard.html';},1500);
+}
+
+// Gestione redirect dopo OAuth Google e recovery password
 supabase.auth.onAuthStateChange(async function(event,session){
   if(event==='SIGNED_IN'&&session){
     await checkAndRedirect(session.user);
+  }
+  if(event==='PASSWORD_RECOVERY'){
+    document.getElementById('auth-section').style.display='none';
+    document.getElementById('denied-section').style.display='none';
+    document.getElementById('reset-section').style.display='block';
+    document.getElementById('msg').style.display='none';
   }
 });
 </script>
