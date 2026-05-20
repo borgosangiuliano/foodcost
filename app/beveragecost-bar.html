@@ -2139,15 +2139,16 @@ function renderCocktail(){
   var q=(document.getElementById('search-cocktail').value||'').toLowerCase();
   var cat=document.getElementById('filter-cat').value;
 
-  var CATS=['Classici IBA','Aperitivi','Long Drink','Shot','Analcolici','Signature','Altro'];
+  var cats=[...new Set(cocktail.map(function(c){return c.cat||'';}).filter(Boolean))].sort();
   var sel=document.getElementById('filter-cat');
   var cur=sel.value;
-  sel.innerHTML='<option value="">Tutte le categorie</option>'+CATS.map(function(c){
+  sel.innerHTML='<option value="">Tutte le categorie</option>'+cats.map(function(c){
     return '<option'+(c===cur?' selected':'')+'>'+c+'</option>';
   }).join('');
+  if(cats.indexOf(cat)<0) cat='';
 
   var list=cocktail.filter(function(c){
-    return (!q||c.nome.toLowerCase().indexOf(q)>=0)&&(!cat||c.cat===cat);
+    return (!q||(c.nome||'').toLowerCase().indexOf(q)>=0)&&(!cat||c.cat===cat);
   });
 
   var totalCost=cocktail.reduce(function(s,c){return s+costoDrink(c);},0);

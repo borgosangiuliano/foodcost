@@ -2026,16 +2026,17 @@ function renderRicette(){
   var q=(document.getElementById('search-ricette').value||'').toLowerCase();
   var cat=document.getElementById('filter-cat').value;
 
-  // Aggiorna filtro categorie
-  var CATS=['Antipasti','Primi','Secondi - Carne','Secondi - Pesce','Contorni','Dolci','Finger Food','Pizze','Zuppe & Vellutate','Altro'];
+  // Aggiorna filtro categorie (solo categorie con almeno una ricetta)
+  var cats=[...new Set(ricette.map(function(r){return r.cat||'';}).filter(Boolean))].sort();
   var sel=document.getElementById('filter-cat');
   var cur=sel.value;
-  sel.innerHTML='<option value="">Tutte le categorie</option>'+CATS.map(function(c){
+  sel.innerHTML='<option value="">Tutte le categorie</option>'+cats.map(function(c){
     return '<option'+(c===cur?' selected':'')+'>'+c+'</option>';
   }).join('');
+  if(cats.indexOf(cat)<0) cat='';
 
   var list=ricette.filter(function(r){
-    return (!q||r.nome.toLowerCase().indexOf(q)>=0)&&(!cat||r.cat===cat);
+    return (!q||(r.nome||'').toLowerCase().indexOf(q)>=0)&&(!cat||r.cat===cat);
   });
 
   // Stats — solo ricette principali per il food cost medio
